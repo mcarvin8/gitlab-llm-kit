@@ -8,6 +8,7 @@ updates:
       prefix: "feat(openai)"
     allow:
       - dependency-name: 'openai'
+      - dependency-name: '@mcarvin/smart-diff'
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
