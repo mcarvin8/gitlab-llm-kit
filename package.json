@@ -11,7 +11,9 @@
     "node": ">=20"
   },
   "files": [
-    "dist"
+    "dist",
+    "HANDBOOK.md",
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public"

@@ -7,6 +7,8 @@
 
 TypeScript library for **AI-assisted workflows on top of the GitLab REST API**. It fetches merge requests, issues, diffs, wikis, releases, and other resources using ordinary **personal or project access tokens**, then generates summaries and review aids through an **OpenAI-compatible Chat Completions API**—including the **same LLM stack** used by [`@mcarvin/smart-diff`](https://www.npmjs.com/package/@mcarvin/smart-diff) for **git diff** summarization (local repos) and for **GitLab merge request** patches when you use the bundled helpers.
 
+**Examples handbook:** runnable snippets for every public export are in **[HANDBOOK.md](HANDBOOK.md)**.
+
 ## Why this exists (and not GitLab Duo)
 
 **GitLab Duo** is GitLab’s hosted AI product; it requires the appropriate GitLab subscription and Duo licensing.
