@@ -1,0 +1,71 @@
+{
+  "name": "@mcarvin/gitlab-llm-kit",
+  "version": "0.1.0",
+  "description": "TypeScript toolkit for GitLab REST API workflows with your own OpenAI-compatible LLM.",
+  "author": "Matt Carvin",
+  "license": "MIT",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/typings/index.d.ts",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "npx rollup -c",
+    "start": "node dist/index.cjs",
+    "test": "jest --coverage",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{js,ts}\"",
+    "prepack": "npm run build",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write \"**/*.{js,ts}\" --ignore-unknown"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^1.0.0",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.2",
+    "husky": "^9.1.7",
+    "jest": "^30.3.0",
+    "lint-staged": "^16.3.3",
+    "prettier": "3.8.1",
+    "rollup": "^4.59.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@mcarvin/smart-diff": "^1.1.0",
+    "openai": "^6.34.0",
+    "tslib": "^2.6.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcarvin8/gitlab-llm-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mcarvin8/gitlab-llm-kit/issues"
+  },
+  "keywords": [
+    "gitlab",
+    "openai",
+    "merge-requests",
+    "diff",
+    "rest-api",
+    "llm",
+    "ai",
+    "toolkit",
+    "tools",
+    "utils",
+    "git"
+  ]
+}
