@@ -1,6 +1,6 @@
 # @mcarvin/gitlab-llm-kit
 
-[![NPM](https://img.shields.io/npm/v/@mcarvin/gitlab-llm-kit.svg?label=gitlab-llm-kit)](https://www.npmjs.com/package/@mcarvin/gitlab-llm-kit)
+[![NPM](https://img.shields.io/npm/v/@mcarvin/gitlab-llm-kit.svg)](https://www.npmjs.com/package/@mcarvin/gitlab-llm-kit)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/mcarvin8/gitlab-llm-kit/main/LICENSE.md)
 [![Downloads/week](https://img.shields.io/npm/dw/@mcarvin/gitlab-llm-kit.svg)](https://npmjs.org/package/@mcarvin/gitlab-llm-kit)
 [![codecov](https://codecov.io/gh/mcarvin8/gitlab-llm-kit/graph/badge.svg?token=9GMSXV4DPQ)](https://codecov.io/gh/mcarvin8/gitlab-llm-kit)
