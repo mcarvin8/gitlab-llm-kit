@@ -4,6 +4,7 @@ import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import {
   compareRefs,
+  createCommitNote,
   getFile,
   listCommitComments,
   listCommits,
@@ -45,13 +46,36 @@ export async function aiCommitsReleaseNoteBullets(
   });
 }
 
+export type AiCommitCommentsDigestOptions = {
+  model?: string;
+  maxPromptChars?: number;
+  /**
+   * When true, POSTs the generated markdown as a new comment on this commit (`POST …/repository/commits/:sha/comments`).
+   * Requires a token with the **`api`** scope.
+   */
+  postSummaryAsCommitNote?: boolean;
+};
+
+async function maybePostCommitSummary(
+  client: GitlabClient,
+  projectId: string | number,
+  sha: string,
+  summary: string,
+  post: boolean | undefined,
+): Promise<void> {
+  if (!post) {
+    return;
+  }
+  await createCommitNote(client, projectId, sha, { note: summary });
+}
+
 /** Summarize discussion anchored on a commit SHA. */
 export async function aiCommitCommentsDigest(
   client: GitlabClient,
   llm: LabflowLlm,
   projectId: string | number,
   sha: string,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiCommitCommentsDigestOptions,
 ): Promise<string> {
   const notes = await listCommitComments(client, projectId, sha);
   const formatted = notes
@@ -60,11 +84,20 @@ export async function aiCommitCommentsDigest(
 
   const user = truncateForPrompt(formatted, options?.maxPromptChars ?? 40_000);
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nSummarize commit discussion / review notes briefly. Markdown.`,
     user,
   });
+
+  await maybePostCommitSummary(
+    client,
+    projectId,
+    sha,
+    summary,
+    options?.postSummaryAsCommitNote,
+  );
+  return summary;
 }
 
 export type ExplainPathOptions = {

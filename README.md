@@ -144,11 +144,13 @@ await summarizeGitDiff({ from: 'origin/main', to: 'HEAD', cwd: '/path/to/repo' }
 
 **Issues:** Issue insight helpers accept **`postSummaryAsIssueNote: true`** on **`AiIssueInsightOptions`**: `aiIssueThreadSummary`, `aiStaleIssueSummary`, and `aiIssueSuggestedNextStep`.
 
+**Commits:** **`aiCommitCommentsDigest`** accepts **`postSummaryAsCommitNote: true`** on **`AiCommitCommentsDigestOptions`** to post the markdown as a comment on that commit SHA (via **`createCommitNote`** — `POST …/repository/commits/:sha/comments`). Requires **`api`** scope.
+
 **Releases:** **`aiDraftReleaseNotes`** accepts **`postSummaryAsReleaseDescription: true`** on **`AiDraftReleaseNotesOptions`** to set the GitLab release **`description`** for the given tag (via **`upsertRelease`** — `PUT` if the release exists, otherwise `POST`). If the Git tag does not exist yet, pass **`releaseRef`** (branch or SHA) so GitLab can create the tag when creating the release.
 
 **Wiki:** These accept **`postSummaryToWikiSlug`** (plus optional **`wikiPageTitle`** / **`wikiFormat`**) and write with **`upsertWikiPage`**: **`aiListReleasesOverview`** (`AiListReleasesOverviewOptions`), **`aiWikiRunbookTldr`**, **`aiWikiOutdatedDocHints`**, and **`aiSuggestMergeWikiPages`** (shared **`AiWikiInsightOptions`**; runbook also has **`AiWikiRunbookTldrOptions`** including **`wikiVersion`**). Prefer a destination slug that should receive the generated markdown (often different from the source runbook slug so you do not replace a full page with a short TL;DR).
 
-You can also call **`createMergeRequestNote`**, **`createIssueNote`**, **`upsertRelease`**, **`createWikiPage`**, **`updateWikiPage`**, or **`upsertWikiPage`** yourself. Notes use `POST …/merge_requests/…/notes` or `POST …/issues/…/notes`; releases use the [Releases API](https://docs.gitlab.com/ee/api/releases.html); wiki uses the [Wikis API](https://docs.gitlab.com/ee/api/wikis.html). All require a token with the **`api`** scope; otherwise GitLab often returns **403**.
+You can also call **`createMergeRequestNote`**, **`createIssueNote`**, **`createCommitNote`**, **`upsertRelease`**, **`createWikiPage`**, **`updateWikiPage`**, or **`upsertWikiPage`** yourself. Notes use `POST …/merge_requests/…/notes`, `POST …/issues/…/notes`, or `POST …/repository/commits/…/comments` ([Commits API](https://docs.gitlab.com/ee/api/commits.html)); releases use the [Releases API](https://docs.gitlab.com/ee/api/releases.html); wiki uses the [Wikis API](https://docs.gitlab.com/ee/api/wikis.html). All require a token with the **`api`** scope; otherwise GitLab often returns **403**.
 
 **If posting fails:** The client throws **`GitlabHttpError`** (see `GitlabHttpError` in exports). For a missing or wrong scope you typically get **`status: 403`** and a JSON **`body`** from GitLab such as `"error":"insufficient_scope"` and `"error_description":"The request requires higher privileges than provided by the access token."` Read-only scopes (e.g. `read_api` only) are enough to **fetch** project data and run the LLM, but not to **write** notes, releases, or wiki pages—use a token that includes **`api`** (full REST API access). Your GitLab version’s token UI may show other scope names; follow your admin’s guidance.
 
@@ -165,7 +167,7 @@ Low-level `request` / `requestAllPages` plus typed wrappers, for example:
 | Merge requests | `getMergeRequest`, `listMergeRequestNotes`, `createMergeRequestNote`, `getMergeRequestChanges`, `listMergeRequestCommits`, `listMergeRequestDiscussions` |
 | Issues | `getIssue`, `listIssueNotes`, `createIssueNote`, `listProjectIssues` |
 | Epics | `getEpic`, `listEpicIssues`, `listGroupEpics` |
-| Repository | `listCommits`, `listCommitComments`, `getFile`, `compareRefs` |
+| Repository | `listCommits`, `listCommitComments`, `createCommitNote`, `getFile`, `compareRefs` |
 | Releases | `getReleaseByTag`, `listReleases`, `upsertRelease` |
 | Security | `listVulnerabilityFindings` |
 | Wiki & snippets | `listWikiPages`, `getWikiPage`, `createWikiPage`, `updateWikiPage`, `upsertWikiPage`, `listProjectSnippets`, `getSnippet` |
@@ -210,7 +212,7 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 | | `listOpenIssuesForProject` | List open (or closed) issues. |
 | **Epics** | `aiEpicRoadmapRollup` | Roadmap-style rollup from child issues. |
 | **Repository** | `aiCommitsReleaseNoteBullets` | Release-note style bullets from commits. |
-| | `aiCommitCommentsDigest` | Summarize commit discussion comments. |
+| | `aiCommitCommentsDigest` | Summarize commit discussion comments. Optional `postSummaryAsCommitNote` posts the summary on the commit (`AiCommitCommentsDigestOptions`; PAT with **`api`** scope). |
 | | `aiExplainRepositoryPath` | Explain a file path (size limits; scrub secrets). |
 | | `aiCompareRefsNarrative` | Narrative between two refs (no full diff in prompt). |
 | | `aiConventionalCommitNudge` | Conventional Commits suggestions from sample messages. |

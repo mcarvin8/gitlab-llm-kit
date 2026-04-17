@@ -48,6 +48,7 @@ export {
 export {
   listCommits,
   listCommitComments,
+  createCommitNote,
   getFile,
   compareRefs,
 } from "./gitlab/repository.js";
@@ -126,6 +127,7 @@ export {
   aiExplainRepositoryPath,
   aiCompareRefsNarrative,
   aiConventionalCommitNudge,
+  type AiCommitCommentsDigestOptions,
   type ExplainPathOptions,
 } from "./insights/repository.js";
 

@@ -1,6 +1,6 @@
 # Handbook
 
-This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. By default, insight functions only **read** from GitLab and return text in memory. **Optional** paths post to GitLab: `createMergeRequestNote` / `createIssueNote`, `upsertRelease`, `upsertWikiPage`, and matching insight flags—those require a token with the **`api`** scope (see [GitLab REST — merge requests](#gitlab-rest--merge-requests), [issues](#gitlab-rest--issues), [releases](#gitlab-rest--releases), and [wiki](#gitlab-rest--wiki--snippets)).
+This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. By default, insight functions only **read** from GitLab and return text in memory. **Optional** paths post to GitLab: `createMergeRequestNote` / `createIssueNote` / `createCommitNote`, `upsertRelease`, `upsertWikiPage`, and matching insight flags—those require a token with the **`api`** scope (see [GitLab REST — merge requests](#gitlab-rest--merge-requests), [issues](#gitlab-rest--issues), [repository](#gitlab-rest--repository), [releases](#gitlab-rest--releases), and [wiki](#gitlab-rest--wiki--snippets)).
 
 **Convention:** replace placeholders (`YOUR_PROJECT`, `42`, …). Use **`merge_request_iid` / `issue_iid`** from the GitLab URL, not the global database id.
 
@@ -200,12 +200,17 @@ const epics = await listGroupEpics(client, GROUP, { state: "opened" });
 import {
   listCommits,
   listCommitComments,
+  createCommitNote,
   getFile,
   compareRefs,
 } from "@mcarvin/gitlab-llm-kit";
 
 const commits = await listCommits(client, PROJECT, { ref_name: "main" });
 const onSha = await listCommitComments(client, PROJECT, "abc123...");
+// Optional write — needs token with `api` scope (same as MR/issue notes)
+await createCommitNote(client, PROJECT, "abc123...", {
+  note: "Automated note body (markdown allowed).",
+});
 const blob = await getFile(client, PROJECT, "README.md", "main");
 const cmp = await compareRefs(client, PROJECT, "v1.0.0", "main");
 ```
@@ -576,7 +581,9 @@ const bullets = await aiCommitsReleaseNoteBullets(client, llm, PROJECT, "main", 
   path: "src",
 });
 
-const commitTalk = await aiCommitCommentsDigest(client, llm, PROJECT, "abc123...");
+const commitTalk = await aiCommitCommentsDigest(client, llm, PROJECT, "abc123...", {
+  // postSummaryAsCommitNote: true,  // optional: POST summary as a commit comment (needs PAT with `api` scope)
+});
 
 const explain = await aiExplainRepositoryPath(client, llm, PROJECT, "src/app.ts", "main", {
   maxDecodedBytes: 80_000,

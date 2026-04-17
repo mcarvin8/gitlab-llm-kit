@@ -29,6 +29,7 @@ import { getProject, getReadmeFile } from "@src/gitlab/projectMeta.js";
 import { getReleaseByTag, listReleases, upsertRelease } from "@src/gitlab/releases.js";
 import {
   compareRefs,
+  createCommitNote,
   getFile,
   listCommitComments,
   listCommits,
@@ -188,6 +189,14 @@ describe("gitlab API wrappers", () => {
     await listCommitComments(c, "p", "abc123");
     expect(c.requestAllPages).toHaveBeenCalledWith(
       "/projects/p/repository/commits/abc123/comments",
+    );
+
+    c.request.mockResolvedValue({ id: 1, body: "hi" });
+    await createCommitNote(c, "p", "deadbeef", { note: "Summary markdown" });
+    expect(c.request).toHaveBeenCalledWith(
+      "POST",
+      "/projects/p/repository/commits/deadbeef/comments",
+      { body: { note: "Summary markdown" } },
     );
 
     c.request.mockResolvedValue({ content: "eA==", encoding: "base64" });

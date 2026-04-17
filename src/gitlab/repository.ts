@@ -20,6 +20,26 @@ export async function listCommitComments(
   return client.requestAllPages<Note>(`/projects/${id}/repository/commits/${sha}/comments`);
 }
 
+/**
+ * Post a comment on a commit (SHA). GitLab expects JSON `{ "note": "..." }`.
+ * Requires a token with the **`api`** scope (same as other write helpers).
+ * See [Post comment to commit](https://docs.gitlab.com/ee/api/commits.html#post-comment-to-commit).
+ */
+export async function createCommitNote(
+  client: GitlabClient,
+  projectId: string | number,
+  sha: string,
+  params: { note: string },
+): Promise<Note> {
+  const id = encodeProjectId(projectId);
+  const shaSeg = encodeURIComponent(sha);
+  return client.request<Note>(
+    "POST",
+    `/projects/${id}/repository/commits/${shaSeg}/comments`,
+    { body: params },
+  );
+}
+
 export async function getFile(
   client: GitlabClient,
   projectId: string | number,
