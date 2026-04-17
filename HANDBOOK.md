@@ -383,6 +383,8 @@ import {
 } from "@mcarvin/gitlab-llm-kit";
 
 const llm = createLabflowLlm();
+// Gateway headers (same env as README: OPENAI_DEFAULT_HEADERS / LLM_DEFAULT_HEADERS as JSON), or explicitly:
+// createLabflowLlm({ apiKey: "...", defaultHeaders: { "X-Org-Id": "..." } });
 const short = truncateForPrompt(longText, 50_000);
 void POLICY_DEFAULT;
 void POLICY_NO_SECRET_EXFILTRATION;

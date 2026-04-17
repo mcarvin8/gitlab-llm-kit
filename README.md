@@ -77,7 +77,7 @@ Insight functions use **`createLabflowLlm()`**, which reads the official OpenAI 
 | `OPENAI_BASE_URL` | Base URL for an OpenAI-compatible API (many gateways use this) |
 | `OPENAI_MODEL` | Default model id for `createLabflowLlm` (optional; library default applies if unset) |
 | `LLM_API_KEY` / `LLM_BASE_URL` | Used by `@mcarvin/smart-diff`’s client (`LLM_*` overrides where both exist in that package) |
-| `OPENAI_DEFAULT_HEADERS` / `LLM_DEFAULT_HEADERS` | JSON object of extra headers for gateways that need RBAC or custom auth—see `@mcarvin/smart-diff` docs |
+| `OPENAI_DEFAULT_HEADERS` / `LLM_DEFAULT_HEADERS` | JSON object of extra headers for gateways that need RBAC or custom auth. **`createLabflowLlm()`** merges these into the OpenAI client (same idea as `@mcarvin/smart-diff`); override or add headers with **`createLabflowLlm({ defaultHeaders: { … } })`** (options win on key conflicts). |
 | `LLM_MAX_DIFF_CHARS` | Caps unified diff size sent to the model for diff summarization |
 
 Example aligned with a company gateway:

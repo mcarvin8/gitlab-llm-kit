@@ -12,7 +12,37 @@ export type CreateLabflowLlmOptions = {
   defaultModel?: string;
   /** Bound total user prompt size after truncation. */
   maxUserChars?: number;
+  /**
+   * Extra HTTP headers on every request (e.g. gateway auth / tenancy).
+   * Merged with optional JSON from `OPENAI_DEFAULT_HEADERS` or `LLM_DEFAULT_HEADERS` (same idea as `@mcarvin/smart-diff`);
+   * keys in this object win on conflict.
+   */
+  defaultHeaders?: Record<string, string>;
 };
+
+function defaultHeadersFromEnv(): Record<string, string> | undefined {
+  const raw =
+    process.env.OPENAI_DEFAULT_HEADERS?.trim() ||
+    process.env.LLM_DEFAULT_HEADERS?.trim();
+  if (!raw) {
+    return undefined;
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const out: Record<string, string> = {};
+      for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+        if (typeof v === "string") {
+          out[k] = v;
+        }
+      }
+      return Object.keys(out).length > 0 ? out : undefined;
+    }
+  } catch {
+    // ignore invalid JSON
+  }
+  return undefined;
+}
 
 /**
  * Build a {@link LabflowLlm} using the official `openai` package.
@@ -33,6 +63,10 @@ export function createLabflowLlm(options: CreateLabflowLlmOptions = {}): Labflow
   const openai = new OpenAI({
     apiKey,
     baseURL: options.baseURL ?? process.env.OPENAI_BASE_URL,
+    defaultHeaders: {
+      ...defaultHeadersFromEnv(),
+      ...options.defaultHeaders,
+    },
   });
 
   const defaultModel =
