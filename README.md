@@ -5,9 +5,9 @@
 [![Downloads/week](https://img.shields.io/npm/dw/@mcarvin/gitlab-llm-kit.svg)](https://npmjs.org/package/@mcarvin/gitlab-llm-kit)
 [![codecov](https://codecov.io/gh/mcarvin8/gitlab-llm-kit/graph/badge.svg?token=9GMSXV4DPQ)](https://codecov.io/gh/mcarvin8/gitlab-llm-kit)
 
-TypeScript library for **AI-assisted workflows on top of the GitLab REST API**. It fetches merge requests, issues, diffs, wikis, releases, and other resources using ordinary **personal or project access tokens**, then generates summaries and review aids through an **OpenAI-compatible Chat Completions API**—including the **same LLM stack** used by [`@mcarvin/smart-diff`](https://www.npmjs.com/package/@mcarvin/smart-diff) for **git diff** summarization (local repos) and for **GitLab merge request** patches when you use the bundled helpers.
+TypeScript library for **AI-assisted workflows on top of the GitLab REST API**. It fetches merge requests, issues, diffs, wikis, releases, and other resources using ordinary **personal or project access tokens**, then generates summaries and review aids through an **OpenAI-compatible Chat Completions API**.
 
-**Examples handbook:** runnable snippets for every public export are in **[HANDBOOK.md](https://github.com/mcarvin8/gitlab-llm-kit/blob/main/HANDBOOK.md)**.
+> **Examples handbook:** runnable snippets for every public export are in **[HANDBOOK.md](https://github.com/mcarvin8/gitlab-llm-kit/blob/main/HANDBOOK.md)**.
 
 ## Why this exists (and not GitLab Duo)
 
