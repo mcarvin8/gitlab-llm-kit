@@ -2,7 +2,7 @@ import type { LabflowLlm } from "../ai/types.js";
 import { POLICY_DEFAULT } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
-import { getIssue, listIssueNotes, listProjectIssues } from "../gitlab/issues.js";
+import { createIssueNote, getIssue, listIssueNotes, listProjectIssues } from "../gitlab/issues.js";
 import type { Issue } from "../gitlab/types.js";
 
 function formatIssueHeader(issue: Issue): string {
@@ -27,12 +27,32 @@ function formatNote(n: { body?: string; author?: { username?: string; name?: str
   return `[${n.created_at ?? ""}] @${who}: ${n.body ?? ""}`;
 }
 
+export type AiIssueInsightOptions = {
+  model?: string;
+  maxPromptChars?: number;
+  /** When true, POST the generated summary as a new issue note (requires token with API write access). */
+  postSummaryAsIssueNote?: boolean;
+};
+
+async function maybePostIssueSummary(
+  client: GitlabClient,
+  projectId: string | number,
+  issueIid: number,
+  summary: string,
+  post: boolean | undefined,
+): Promise<void> {
+  if (!post) {
+    return;
+  }
+  await createIssueNote(client, projectId, issueIid, { body: summary });
+}
+
 export async function aiIssueThreadSummary(
   client: GitlabClient,
   llm: LabflowLlm,
   projectId: string | number,
   issueIid: number,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiIssueInsightOptions,
 ): Promise<string> {
   const issue = await getIssue(client, projectId, issueIid);
   const notes = await listIssueNotes(client, projectId, issueIid);
@@ -41,11 +61,13 @@ export async function aiIssueThreadSummary(
     options?.maxPromptChars ?? 100_000,
   );
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nSummarize a long issue thread: decisions, blockers, next steps. Markdown.`,
     user,
   });
+  await maybePostIssueSummary(client, projectId, issueIid, summary, options?.postSummaryAsIssueNote);
+  return summary;
 }
 
 export async function aiStaleIssueSummary(
@@ -53,7 +75,7 @@ export async function aiStaleIssueSummary(
   llm: LabflowLlm,
   projectId: string | number,
   issueIid: number,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiIssueInsightOptions,
 ): Promise<string> {
   const issue = await getIssue(client, projectId, issueIid);
   const notes = await listIssueNotes(client, projectId, issueIid);
@@ -62,11 +84,13 @@ export async function aiStaleIssueSummary(
     options?.maxPromptChars ?? 100_000,
   );
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nAssess staleness: lastactivity, unclear ownership, recommended ping or close criteria. Markdown.`,
     user,
   });
+  await maybePostIssueSummary(client, projectId, issueIid, summary, options?.postSummaryAsIssueNote);
+  return summary;
 }
 
 export async function aiIssueSuggestedNextStep(
@@ -74,7 +98,7 @@ export async function aiIssueSuggestedNextStep(
   llm: LabflowLlm,
   projectId: string | number,
   issueIid: number,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiIssueInsightOptions,
 ): Promise<string> {
   const issue = await getIssue(client, projectId, issueIid);
   const notes = await listIssueNotes(client, projectId, issueIid);
@@ -83,11 +107,13 @@ export async function aiIssueSuggestedNextStep(
     options?.maxPromptChars ?? 100_000,
   );
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nPropose the smallest next step toward resolution and closure criteria. Markdown checklist.`,
     user,
   });
+  await maybePostIssueSummary(client, projectId, issueIid, summary, options?.postSummaryAsIssueNote);
+  return summary;
 }
 
 /** Scan open issues for likely stale work (heuristic; then optionally batch LLM per issue). */

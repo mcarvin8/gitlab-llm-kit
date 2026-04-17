@@ -58,7 +58,7 @@ Create a **Personal**, **Project**, or **Group** access token in GitLab with the
 | `baseUrl` | API root including `/api/v4`, e.g. `https://gitlab.company.com/api/v4` (default when omitted: `https://gitlab.com/api/v4`) |
 | `GITLAB_BASE_URL` | Convenience only—you still pass `baseUrl` in code unless you read this in your script |
 
-**Writing MR comments:** To use `createMergeRequestNote` or insight options like `postSummaryAsMergeRequestNote`, the token must include the **`api`** scope (full REST read/write). Read-only scopes are not sufficient to create notes.
+**Writing MR or issue comments:** To use `createMergeRequestNote`, `createIssueNote`, or insight options like `postSummaryAsMergeRequestNote` / `postSummaryAsIssueNote`, the token must include the **`api`** scope (full REST read/write). Read-only scopes are not sufficient to create notes.
 
 Self-managed example:
 
@@ -135,16 +135,18 @@ import { summarizeGitDiff } from '@mcarvin/gitlab-llm-kit';
 await summarizeGitDiff({ from: 'origin/main', to: 'HEAD', cwd: '/path/to/repo' });
 ```
 
-### Posting summaries as merge request notes
+### Posting summaries as merge request or issue notes
 
-Some helpers can **create a merge request note** with the generated markdown:
+**Merge requests:** Some helpers **create a merge request note** with the generated markdown:
 
 - `summarizeMergeRequestDiffWithSmartDiff` — set `postSummaryAsMergeRequestNote: true`.
-- All merge-request insight helpers below accept the same flag on their options object (`AiMergeRequestInsightOptions`): `aiMergeRequestDiscussionDigest`, `aiWhatChangedSinceLastReview`, `aiSuggestedMergeRequestReply`, `aiMergeRequestActionItems`, and `aiMergeRequestReviewerBriefingMeta`.
+- Merge-request insight helpers use `AiMergeRequestInsightOptions`: `aiMergeRequestDiscussionDigest`, `aiWhatChangedSinceLastReview`, `aiSuggestedMergeRequestReply`, `aiMergeRequestActionItems`, and `aiMergeRequestReviewerBriefingMeta`.
 
-You can also call **`createMergeRequestNote`** yourself for custom text. All of these use `POST /projects/…/merge_requests/…/notes` and require a GitLab **personal, project, or group access token** with the **`api`** scope. Without it, GitLab returns 403 for create-note requests.
+**Issues:** Issue insight helpers accept **`postSummaryAsIssueNote: true`** on **`AiIssueInsightOptions`**: `aiIssueThreadSummary`, `aiStaleIssueSummary`, and `aiIssueSuggestedNextStep`.
 
-**If posting fails:** The client throws **`GitlabHttpError`** (see `GitlabHttpError` in exports). For a missing or wrong scope you typically get **`status: 403`** and a JSON **`body`** from GitLab such as `"error":"insufficient_scope"` and `"error_description":"The request requires higher privileges than provided by the access token."` Read-only scopes (e.g. `read_api` only) are enough to **fetch** MR data and run the LLM, but not to **create** notes—use a token that includes **`api`** (full REST API access) for write operations. Your GitLab version’s token UI may show other scope names; match whatever your admin documents for “create merge request notes” via the API.
+You can also call **`createMergeRequestNote`** or **`createIssueNote`** yourself for custom text. These use `POST /projects/…/merge_requests/…/notes` or `POST /projects/…/issues/…/notes` and require a GitLab **personal, project, or group access token** with the **`api`** scope. Without it, GitLab returns 403 for create-note requests.
+
+**If posting fails:** The client throws **`GitlabHttpError`** (see `GitlabHttpError` in exports). For a missing or wrong scope you typically get **`status: 403`** and a JSON **`body`** from GitLab such as `"error":"insufficient_scope"` and `"error_description":"The request requires higher privileges than provided by the access token."` Read-only scopes (e.g. `read_api` only) are enough to **fetch** project/MR/issue data and run the LLM, but not to **create** notes—use a token that includes **`api`** (full REST API access) for write operations. Your GitLab version’s token UI may show other scope names; match whatever your admin documents for creating notes via the API.
 
 ---
 
@@ -157,7 +159,7 @@ Low-level `request` / `requestAllPages` plus typed wrappers, for example:
 | Area | Exports (representative) |
 |------|---------------------------|
 | Merge requests | `getMergeRequest`, `listMergeRequestNotes`, `createMergeRequestNote`, `getMergeRequestChanges`, `listMergeRequestCommits`, `listMergeRequestDiscussions` |
-| Issues | `getIssue`, `listIssueNotes`, `listProjectIssues` |
+| Issues | `getIssue`, `listIssueNotes`, `createIssueNote`, `listProjectIssues` |
 | Epics | `getEpic`, `listEpicIssues`, `listGroupEpics` |
 | Repository | `listCommits`, `listCommitComments`, `getFile`, `compareRefs` |
 | Releases | `getReleaseByTag`, `listReleases` |
@@ -197,9 +199,9 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 | | `aiSuggestedMergeRequestReply` | Draft reply text. Optional post as a general MR note (not a threaded reply; PAT with **`api`** scope). |
 | | `aiMergeRequestActionItems` | Extract action items. Optional `postSummaryAsMergeRequestNote` posts the checklist as an MR note (PAT with **`api`** scope). |
 | | `aiMergeRequestReviewerBriefingMeta` | Reviewer briefing from metadata (no diff). Optional `postSummaryAsMergeRequestNote` (PAT with **`api`** scope). |
-| **Issues** | `aiIssueThreadSummary` | Long thread summary. |
-| | `aiStaleIssueSummary` | Staleness / closure hints. |
-| | `aiIssueSuggestedNextStep` | Next step + closure criteria. |
+| **Issues** | `aiIssueThreadSummary` | Long thread summary. Optional `postSummaryAsIssueNote` (PAT with **`api`** scope). |
+| | `aiStaleIssueSummary` | Staleness / closure hints. Optional `postSummaryAsIssueNote` (PAT with **`api`** scope). |
+| | `aiIssueSuggestedNextStep` | Next step + closure criteria. Optional `postSummaryAsIssueNote` (PAT with **`api`** scope). |
 | | `listOpenIssuesForProject` | List open (or closed) issues. |
 | **Epics** | `aiEpicRoadmapRollup` | Roadmap-style rollup from child issues. |
 | **Repository** | `aiCommitsReleaseNoteBullets` | Release-note style bullets from commits. |

@@ -32,7 +32,12 @@ export {
   listMergeRequestCommits,
   listMergeRequestDiscussions,
 } from "./gitlab/mergeRequests.js";
-export { getIssue, listIssueNotes, listProjectIssues } from "./gitlab/issues.js";
+export {
+  getIssue,
+  listIssueNotes,
+  createIssueNote,
+  listProjectIssues,
+} from "./gitlab/issues.js";
 export {
   getEpic,
   listEpicIssues,
@@ -90,6 +95,7 @@ export {
   aiStaleIssueSummary,
   aiIssueSuggestedNextStep,
   listOpenIssuesForProject,
+  type AiIssueInsightOptions,
 } from "./insights/issues.js";
 
 export { aiEpicRoadmapRollup } from "./insights/epics.js";

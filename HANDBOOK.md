@@ -1,6 +1,6 @@
 # Handbook
 
-This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. By default, insight functions only **read** from GitLab and return text in memory. **Optional** paths post to GitLab: `createMergeRequestNote`, and `postSummaryAsMergeRequestNote` on selected helpers—those require a token with the **`api`** scope (see [GitLab REST — merge requests](#gitlab-rest--merge-requests)).
+This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. By default, insight functions only **read** from GitLab and return text in memory. **Optional** paths post to GitLab: `createMergeRequestNote` / `createIssueNote`, `postSummaryAsMergeRequestNote` on selected MR helpers, and `postSummaryAsIssueNote` on selected issue helpers—those require a token with the **`api`** scope (see [GitLab REST — merge requests](#gitlab-rest--merge-requests) and [GitLab REST — issues](#gitlab-rest--issues)).
 
 **Convention:** replace placeholders (`YOUR_PROJECT`, `42`, …). Use **`merge_request_iid` / `issue_iid`** from the GitLab URL, not the global database id.
 
@@ -147,7 +147,7 @@ const created = await createMergeRequestNote(client, PROJECT, 42, {
 void created.id;
 ```
 
-Wrong scope usually surfaces as **`GitlabHttpError`** with **`status` 403** and a JSON **`body`** containing `"error":"insufficient_scope"` (see README → *Posting summaries as merge request notes*).
+Wrong scope usually surfaces as **`GitlabHttpError`** with **`status` 403** and a JSON **`body`** containing `"error":"insufficient_scope"` (see README → *Posting summaries as merge request or issue notes*).
 
 ---
 
@@ -159,6 +159,19 @@ import { getIssue, listIssueNotes, listProjectIssues } from "@mcarvin/gitlab-llm
 const issue = await getIssue(client, PROJECT, 7);
 const issueNotes = await listIssueNotes(client, PROJECT, 7);
 const opened = await listProjectIssues(client, PROJECT, { state: "opened" });
+```
+
+### `createIssueNote` (write)
+
+Creates a note on the issue. Requires a token with the **`api`** scope (same privilege story as `createMergeRequestNote`).
+
+```ts
+import { createIssueNote } from "@mcarvin/gitlab-llm-kit";
+
+const created = await createIssueNote(client, PROJECT, 7, {
+  body: "## Summary\n\nYour markdown here.",
+});
+void created.id;
 ```
 
 ---
@@ -456,6 +469,8 @@ const text = await aiMergeRequestReviewerBriefingMeta(client, llm, PROJECT, 42, 
 
 ### `aiIssueThreadSummary` / `aiStaleIssueSummary` / `aiIssueSuggestedNextStep`
 
+Options use **`AiIssueInsightOptions`** (`model`, `maxPromptChars`, `postSummaryAsIssueNote`). Set `postSummaryAsIssueNote: true` to post the generated markdown as an issue note; requires a PAT with the **`api`** scope.
+
 ```ts
 import {
   aiIssueThreadSummary,
@@ -463,7 +478,9 @@ import {
   aiIssueSuggestedNextStep,
 } from "@mcarvin/gitlab-llm-kit";
 
-const a = await aiIssueThreadSummary(client, llm, PROJECT, 7);
+const a = await aiIssueThreadSummary(client, llm, PROJECT, 7, {
+  // postSummaryAsIssueNote: true,
+});
 const b = await aiStaleIssueSummary(client, llm, PROJECT, 7);
 const c = await aiIssueSuggestedNextStep(client, llm, PROJECT, 7);
 ```
@@ -703,6 +720,7 @@ Import types alongside values when you need them:
 
 ```ts
 import type {
+  AiIssueInsightOptions,
   AiMergeRequestInsightOptions,
   MergeRequest,
   Issue,

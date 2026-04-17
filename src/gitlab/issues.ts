@@ -20,6 +20,19 @@ export async function listIssueNotes(
   return client.requestAllPages<Note>(`/projects/${id}/issues/${issueIid}/notes`);
 }
 
+/** Create a note on the issue. Requires API token with write access. */
+export async function createIssueNote(
+  client: GitlabClient,
+  projectId: string | number,
+  issueIid: number,
+  params: { body: string },
+): Promise<Note> {
+  const id = encodeProjectId(projectId);
+  return client.request<Note>("POST", `/projects/${id}/issues/${issueIid}/notes`, {
+    body: params,
+  });
+}
+
 export async function listProjectIssues(
   client: GitlabClient,
   projectId: string | number,
