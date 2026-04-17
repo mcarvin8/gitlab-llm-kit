@@ -20,6 +20,27 @@ export type CreateLabflowLlmOptions = {
   defaultHeaders?: Record<string, string>;
 };
 
+/**
+ * OpenAI's client always expects `apiKey`; gateways that authenticate only via
+ * `defaultHeaders` still need a dummy value so the SDK constructs.
+ */
+const PLACEHOLDER_API_KEY_FOR_HEADER_ONLY_AUTH = "unused";
+
+function mergeDefaultHeaders(
+  options: CreateLabflowLlmOptions,
+): Record<string, string> {
+  return {
+    ...defaultHeadersFromEnv(),
+    ...options.defaultHeaders,
+  };
+}
+
+function hasHeaderAuth(headers: Record<string, string>): boolean {
+  return Object.values(headers).some(
+    (v) => typeof v === "string" && v.trim().length > 0,
+  );
+}
+
 function defaultHeadersFromEnv(): Record<string, string> | undefined {
   const raw =
     process.env.OPENAI_DEFAULT_HEADERS?.trim() ||
@@ -46,16 +67,25 @@ function defaultHeadersFromEnv(): Record<string, string> | undefined {
 
 /**
  * Build a {@link LabflowLlm} using the official `openai` package.
- * Set `OPENAI_API_KEY` or pass `apiKey`.
+ * Set `OPENAI_API_KEY` or pass `apiKey`, unless the gateway authenticates only via
+ * `defaultHeaders` / `OPENAI_DEFAULT_HEADERS` / `LLM_DEFAULT_HEADERS` (then a placeholder key is used for the SDK).
  */
 export function createLabflowLlm(options: CreateLabflowLlmOptions = {}): LabflowLlm {
-  const apiKey = options.apiKey ?? process.env.OPENAI_API_KEY ?? "";
+  const explicitKey = options.apiKey ?? process.env.OPENAI_API_KEY ?? "";
+  const mergedHeaders = mergeDefaultHeaders(options);
+  const headerOnly = hasHeaderAuth(mergedHeaders);
+  const apiKey =
+    explicitKey.trim().length > 0
+      ? explicitKey
+      : headerOnly
+        ? PLACEHOLDER_API_KEY_FOR_HEADER_ONLY_AUTH
+        : "";
   const maxUserChars = options.maxUserChars ?? 120_000;
 
   if (!apiKey) {
     return async () => {
       throw new Error(
-        "createLabflowLlm: Missing OPENAI_API_KEY (or pass apiKey in options).",
+        "createLabflowLlm: Missing OPENAI_API_KEY (or pass apiKey), and no defaultHeaders / OPENAI_DEFAULT_HEADERS / LLM_DEFAULT_HEADERS for header-only auth.",
       );
     };
   }
@@ -63,10 +93,7 @@ export function createLabflowLlm(options: CreateLabflowLlmOptions = {}): Labflow
   const openai = new OpenAI({
     apiKey,
     baseURL: options.baseURL ?? process.env.OPENAI_BASE_URL,
-    defaultHeaders: {
-      ...defaultHeadersFromEnv(),
-      ...options.defaultHeaders,
-    },
+    defaultHeaders: mergedHeaders,
   });
 
   const defaultModel =

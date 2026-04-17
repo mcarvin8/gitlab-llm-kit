@@ -73,7 +73,7 @@ Insight functions use **`createLabflowLlm()`**, which reads the official OpenAI 
 
 | Variable | Purpose |
 |----------|---------|
-| `OPENAI_API_KEY` | API key for the default `createLabflowLlm()` path |
+| `OPENAI_API_KEY` | API key for the default `createLabflowLlm()` path (optional if you authenticate only via `defaultHeaders` / `OPENAI_DEFAULT_HEADERS`) |
 | `OPENAI_BASE_URL` | Base URL for an OpenAI-compatible API (many gateways use this) |
 | `OPENAI_MODEL` | Default model id for `createLabflowLlm` (optional; library default applies if unset) |
 | `LLM_API_KEY` / `LLM_BASE_URL` | Used by `@mcarvin/smart-diff`’s client (`LLM_*` overrides where both exist in that package) |

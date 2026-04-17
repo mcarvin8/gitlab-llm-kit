@@ -74,6 +74,24 @@ describe("createLabflowLlm with API key", () => {
     );
   });
 
+  it("uses placeholder apiKey when only defaultHeaders authenticate", async () => {
+    const llm = createLabflowLlm({
+      apiKey: "",
+      baseURL: "https://gateway.example/v1",
+      defaultHeaders: { Authorization: "Bearer gateway-token" },
+    });
+    const out = await llm({ system: "s", user: "u" });
+    expect(out).toBe("assistant text");
+    expect(OpenAI).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apiKey: "unused",
+        defaultHeaders: expect.objectContaining({
+          Authorization: "Bearer gateway-token",
+        }),
+      }),
+    );
+  });
+
   it("merges OPENAI_DEFAULT_HEADERS JSON with option defaultHeaders", async () => {
     const old = process.env.OPENAI_DEFAULT_HEADERS;
     process.env.OPENAI_DEFAULT_HEADERS = JSON.stringify({
@@ -98,6 +116,33 @@ describe("createLabflowLlm with API key", () => {
         delete process.env.OPENAI_DEFAULT_HEADERS;
       } else {
         process.env.OPENAI_DEFAULT_HEADERS = old;
+      }
+    }
+  });
+
+  it("header-only auth from env without OPENAI_API_KEY", async () => {
+    const oldKey = process.env.OPENAI_API_KEY;
+    const oldHeaders = process.env.OPENAI_DEFAULT_HEADERS;
+    delete process.env.OPENAI_API_KEY;
+    process.env.OPENAI_DEFAULT_HEADERS = JSON.stringify({ "X-API-Key": "from-env" });
+    try {
+      createLabflowLlm({ apiKey: "" });
+      expect(OpenAI).toHaveBeenCalledWith(
+        expect.objectContaining({
+          apiKey: "unused",
+          defaultHeaders: expect.objectContaining({ "X-API-Key": "from-env" }),
+        }),
+      );
+    } finally {
+      if (oldKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = oldKey;
+      }
+      if (oldHeaders === undefined) {
+        delete process.env.OPENAI_DEFAULT_HEADERS;
+      } else {
+        process.env.OPENAI_DEFAULT_HEADERS = oldHeaders;
       }
     }
   });

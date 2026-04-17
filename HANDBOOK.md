@@ -383,6 +383,8 @@ import {
 } from "@mcarvin/gitlab-llm-kit";
 
 const llm = createLabflowLlm();
+// Gateway headers only (no OPENAI_API_KEY): set OPENAI_DEFAULT_HEADERS / LLM_DEFAULT_HEADERS as JSON, or:
+// createLabflowLlm({ defaultHeaders: { Authorization: "Bearer ..." } });
 // Gateway headers (same env as README: OPENAI_DEFAULT_HEADERS / LLM_DEFAULT_HEADERS as JSON), or explicitly:
 // createLabflowLlm({ apiKey: "...", defaultHeaders: { "X-Org-Id": "..." } });
 const short = truncateForPrompt(longText, 50_000);
