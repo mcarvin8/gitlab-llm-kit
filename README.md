@@ -140,7 +140,7 @@ await summarizeGitDiff({ from: 'origin/main', to: 'HEAD', cwd: '/path/to/repo' }
 Some helpers can **create a merge request note** with the generated markdown:
 
 - `summarizeMergeRequestDiffWithSmartDiff` — set `postSummaryAsMergeRequestNote: true`.
-- `aiMergeRequestDiscussionDigest` and `aiMergeRequestActionItems` — same option on their options object (`AiMergeRequestInsightOptions`).
+- All merge-request insight helpers below accept the same flag on their options object (`AiMergeRequestInsightOptions`): `aiMergeRequestDiscussionDigest`, `aiWhatChangedSinceLastReview`, `aiSuggestedMergeRequestReply`, `aiMergeRequestActionItems`, and `aiMergeRequestReviewerBriefingMeta`.
 
 You can also call **`createMergeRequestNote`** yourself for custom text. All of these use `POST /projects/…/merge_requests/…/notes` and require a GitLab **personal, project, or group access token** with the **`api`** scope. Without it, GitLab returns 403 for create-note requests.
 
@@ -193,10 +193,10 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 | Area | Function | Purpose |
 |------|----------|---------|
 | **Merge requests** | `aiMergeRequestDiscussionDigest` | Thread + title/description digest. Optional `postSummaryAsMergeRequestNote` posts the summary as an MR note (PAT with **`api`** scope). |
-| | `aiWhatChangedSinceLastReview` | Notes since a timestamp checkpoint. |
-| | `aiSuggestedMergeRequestReply` | Draft reply text. |
+| | `aiWhatChangedSinceLastReview` | Notes since a timestamp checkpoint. Optional `postSummaryAsMergeRequestNote` (PAT with **`api`** scope). |
+| | `aiSuggestedMergeRequestReply` | Draft reply text. Optional post as a general MR note (not a threaded reply; PAT with **`api`** scope). |
 | | `aiMergeRequestActionItems` | Extract action items. Optional `postSummaryAsMergeRequestNote` posts the checklist as an MR note (PAT with **`api`** scope). |
-| | `aiMergeRequestReviewerBriefingMeta` | Reviewer briefing from metadata (no diff). |
+| | `aiMergeRequestReviewerBriefingMeta` | Reviewer briefing from metadata (no diff). Optional `postSummaryAsMergeRequestNote` (PAT with **`api`** scope). |
 | **Issues** | `aiIssueThreadSummary` | Long thread summary. |
 | | `aiStaleIssueSummary` | Staleness / closure hints. |
 | | `aiIssueSuggestedNextStep` | Next step + closure criteria. |

@@ -369,7 +369,7 @@ const markdown = await summarizeCompareDiffWithSmartDiff({
 
 ## Insight functions — merge requests
 
-All take `(client, llm, projectId, mergeRequestIid, …)` unless noted.
+All take `(client, llm, projectId, mergeRequestIid, …)` unless noted. These insight functions accept **`AiMergeRequestInsightOptions`** on the last argument and can **`postSummaryAsMergeRequestNote`**: `aiMergeRequestDiscussionDigest`, `aiWhatChangedSinceLastReview`, `aiSuggestedMergeRequestReply`, `aiMergeRequestActionItems`, `aiMergeRequestReviewerBriefingMeta`.
 
 ### `aiMergeRequestDiscussionDigest`
 
@@ -387,6 +387,8 @@ const text = await aiMergeRequestDiscussionDigest(client, llm, PROJECT, 42, {
 
 ### `aiWhatChangedSinceLastReview`
 
+Checkpoint is `since.sinceIso`; optional `postSummaryAsMergeRequestNote` on the options object (PAT with **`api`** scope).
+
 ```ts
 import { aiWhatChangedSinceLastReview } from "@mcarvin/gitlab-llm-kit";
 
@@ -396,18 +398,32 @@ const text = await aiWhatChangedSinceLastReview(
   PROJECT,
   42,
   { sinceIso: "2025-01-01T12:00:00Z" },
+  {
+    // postSummaryAsMergeRequestNote: true,
+  },
 );
 ```
 
 ### `aiSuggestedMergeRequestReply`
 
+Optional `postSummaryAsMergeRequestNote` posts the draft as a **general** MR note (same API as other helpers), not as a reply inside a specific discussion thread.
+
 ```ts
 import { aiSuggestedMergeRequestReply } from "@mcarvin/gitlab-llm-kit";
 
-const text = await aiSuggestedMergeRequestReply(client, llm, PROJECT, 42, {
-  inReplyTo: "Can you add tests for the edge case?",
-  tone: "concise",
-});
+const text = await aiSuggestedMergeRequestReply(
+  client,
+  llm,
+  PROJECT,
+  42,
+  {
+    inReplyTo: "Can you add tests for the edge case?",
+    tone: "concise",
+  },
+  {
+    // postSummaryAsMergeRequestNote: true,
+  },
+);
 ```
 
 ### `aiMergeRequestActionItems`
@@ -424,12 +440,14 @@ const text = await aiMergeRequestActionItems(client, llm, PROJECT, 42, {
 
 ### `aiMergeRequestReviewerBriefingMeta`
 
-Metadata-only briefing (no diff in prompt).
+Metadata-only briefing (no diff in prompt). Optional `postSummaryAsMergeRequestNote` (PAT with **`api`** scope).
 
 ```ts
 import { aiMergeRequestReviewerBriefingMeta } from "@mcarvin/gitlab-llm-kit";
 
-const text = await aiMergeRequestReviewerBriefingMeta(client, llm, PROJECT, 42);
+const text = await aiMergeRequestReviewerBriefingMeta(client, llm, PROJECT, 42, {
+  // postSummaryAsMergeRequestNote: true,
+});
 ```
 
 ---

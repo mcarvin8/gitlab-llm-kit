@@ -105,7 +105,7 @@ export async function aiWhatChangedSinceLastReview(
   projectId: string | number,
   mergeRequestIid: number,
   since: ReviewSinceOptions,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiMergeRequestInsightOptions,
 ): Promise<string> {
   const mr = await getMergeRequest(client, projectId, mergeRequestIid);
   const notes = await listMergeRequestNotes(client, projectId, mergeRequestIid);
@@ -125,11 +125,19 @@ export async function aiWhatChangedSinceLastReview(
     options?.maxPromptChars ?? 80_000,
   );
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nList only new information since the reviewer last looked: new commits mentioned, replies, resolutions. Bulleted Markdown.`,
     user,
   });
+  await maybePostMergeRequestSummary(
+    client,
+    projectId,
+    mergeRequestIid,
+    summary,
+    options?.postSummaryAsMergeRequestNote,
+  );
+  return summary;
 }
 
 /** Draft reply text the author/reviewer could post (non-authoritative). */
@@ -143,7 +151,7 @@ export async function aiSuggestedMergeRequestReply(
     inReplyTo?: string;
     tone?: "neutral" | "friendly" | "concise";
   },
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiMergeRequestInsightOptions,
 ): Promise<string> {
   const mr = await getMergeRequest(client, projectId, mergeRequestIid);
   const notes = await listMergeRequestNotes(client, projectId, mergeRequestIid);
@@ -153,11 +161,19 @@ export async function aiSuggestedMergeRequestReply(
     options?.maxPromptChars ?? 80_000,
   );
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nDraft a short GitLab comment (${context.tone ?? "neutral"}). Do not claim approvals or CI passed unless stated in the thread. Markdown, code blocks only when needed.`,
     user,
   });
+  await maybePostMergeRequestSummary(
+    client,
+    projectId,
+    mergeRequestIid,
+    summary,
+    options?.postSummaryAsMergeRequestNote,
+  );
+  return summary;
 }
 
 /** Bullet list of action items extracted from MR + discussion. */
@@ -206,14 +222,22 @@ export async function aiMergeRequestReviewerBriefingMeta(
   llm: LabflowLlm,
   projectId: string | number,
   mergeRequestIid: number,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiMergeRequestInsightOptions,
 ): Promise<string> {
   const mr = await getMergeRequest(client, projectId, mergeRequestIid);
   const user = truncateForPrompt(`${formatMrHeader(mr)}`, options?.maxPromptChars ?? 16_000);
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nWrite a short reviewer briefing: context, blast radius guess from title/branches/labels, questions to ask. Markdown. No diff content provided.`,
     user,
   });
+  await maybePostMergeRequestSummary(
+    client,
+    projectId,
+    mergeRequestIid,
+    summary,
+    options?.postSummaryAsMergeRequestNote,
+  );
+  return summary;
 }
