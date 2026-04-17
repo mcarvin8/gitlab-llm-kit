@@ -1,0 +1,29 @@
+test/completion.openai.spec.ts
+  12937c9bd2e712ee 77-94,122-148
+src/ai/completion.ts
+  12937c9bd2e712ee 23-43,70-71,74-82,88,96
+README.md
+  12937c9bd2e712ee 76
+test/completion.spec.ts
+  12937c9bd2e712ee 4-7,9-10,15-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "fe84c8aa99e8b8bf6021897cd1c41b3483bd1ba9",
+  "prompts": {
+    "12937c9bd2e712ee": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8173ecc5-3c36-42be-8762-22d8d4c2c984",
+        "model": "composer-2-fast"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 101,
+      "total_deletions": 11,
+      "accepted_lines": 111,
+      "overriden_lines": 0
+    }
+  }
+}
