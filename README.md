@@ -171,11 +171,12 @@ Low-level `request` / `requestAllPages` plus typed wrappers, for example:
 | Wiki & snippets | `listWikiPages`, `getWikiPage`, `createWikiPage`, `updateWikiPage`, `upsertWikiPage`, `listProjectSnippets`, `getSnippet` |
 | Search | `searchGitlab`, `searchInProject`, `searchInGroup` |
 | Deployments | `listDeployments`, `listEnvironments` |
+| Pipelines & CI jobs | `listPipelines`, `getPipeline`, `listPipelineJobs`, `getJob`, `getJobTrace` |
 | Activity | `listProjectEvents`, `listGroupEvents` |
 | Audit | `listProjectAuditEvents` |
 | Project | `getProject`, `getReadmeFile` |
 
-Utilities: `encodeProjectId`, `encodeGroupId`, `encodeQuery`, `GitlabHttpError`, shared **types** (`MergeRequest`, `Issue`, …).
+Utilities: `encodeProjectId`, `encodeGroupId`, `encodeQuery`, `GitlabHttpError`, shared **types** (`MergeRequest`, `Issue`, `Pipeline`, `PipelineJob`, …). `GitlabClient` also exposes **`requestText`** for non-JSON responses (for example job log traces).
 
 ### LLM layer
 
@@ -223,6 +224,8 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 | | `aiSuggestMergeWikiPages` | Suggest wiki merges / consolidation. Optional `AiWikiInsightOptions`. |
 | **Search** | `aiSearchMentionBundle` | Summarize global/project search hits (“everything mentioning X”). |
 | **Deployments** | `aiPostDeployIncidentBrief` | Post-deploy / incident brief from deployments + environments. |
+| **Pipelines & CI jobs** | `aiPipelineRunSummary` | Pipeline-level brief: job list plus logs for failed/canceled jobs by default (`AiPipelineInsightOptions`: `maxTraceCharsPerJob`, `tracesForFailedJobsOnly`, …). |
+| | `aiPipelineJobLogSummary` | Summarize a single job’s metadata and trace (errors, likely root cause). |
 | **Activity** | `aiProjectWeeklyDigest` | Weekly digest from project events. |
 | | `aiGroupWeeklyDigest` | Weekly digest from group events. |
 | **Project docs** | `aiProjectReadmeConsistency` | README vs project metadata consistency / onboarding gaps. |

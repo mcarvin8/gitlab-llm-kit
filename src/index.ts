@@ -16,6 +16,8 @@ export type {
   MergeRequest,
   MergeRequestChange,
   Note,
+  Pipeline,
+  PipelineJob,
   Project,
   Release,
   RepositoryCompare,
@@ -70,6 +72,13 @@ export {
 } from "./gitlab/wikiAndSnippets.js";
 export { searchGitlab, searchInProject, searchInGroup, type SearchScope } from "./gitlab/search.js";
 export { listDeployments, listEnvironments } from "./gitlab/deployments.js";
+export {
+  listPipelines,
+  getPipeline,
+  listPipelineJobs,
+  getJob,
+  getJobTrace,
+} from "./gitlab/pipelines.js";
 export { listProjectEvents, listGroupEvents } from "./gitlab/events.js";
 export { listProjectAuditEvents } from "./gitlab/audit.js";
 export { getProject, getReadmeFile } from "./gitlab/projectMeta.js";
@@ -145,6 +154,12 @@ export {
 export { aiSearchMentionBundle } from "./insights/searchBundle.js";
 
 export { aiPostDeployIncidentBrief } from "./insights/deployments.js";
+
+export {
+  aiPipelineJobLogSummary,
+  aiPipelineRunSummary,
+  type AiPipelineInsightOptions,
+} from "./insights/pipelines.js";
 
 export {
   aiProjectWeeklyDigest,

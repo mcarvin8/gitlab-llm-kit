@@ -32,23 +32,25 @@ import { GitlabClient, createLabflowLlm } from "./dist/index.mjs";
 10. [GitLab REST — wiki & snippets](#gitlab-rest--wiki--snippets)
 11. [GitLab REST — search](#gitlab-rest--search)
 12. [GitLab REST — deployments & environments](#gitlab-rest--deployments--environments)
-13. [GitLab REST — events](#gitlab-rest--events)
-14. [GitLab REST — audit](#gitlab-rest--audit)
-15. [GitLab REST — project](#gitlab-rest--project)
-16. [LLM helpers (`createLabflowLlm`, policies, truncate)](#llm-helpers-createlabflowllm-policies-truncate)
-17. [Smart diff bridge (GitLab → `@mcarvin/smart-diff`)](#smart-diff-bridge-gitlab--mcarvinsmart-diff)
-18. [Insight functions — merge requests](#insight-functions--merge-requests)
-19. [Insight functions — issues](#insight-functions--issues)
-20. [Insight functions — epics](#insight-functions--epics)
-21. [Insight functions — repository](#insight-functions--repository)
-22. [Insight functions — releases](#insight-functions--releases)
-23. [Insight functions — security & audit](#insight-functions--security--audit)
-24. [Insight functions — wiki & snippets](#insight-functions--wiki--snippets)
-25. [Insight functions — search](#insight-functions--search)
-26. [Insight functions — deployments](#insight-functions--deployments)
-27. [Insight functions — activity](#insight-functions--activity)
-28. [Insight functions — project README / metadata](#insight-functions--project-readme--metadata)
-29. [Re-exports from `@mcarvin/smart-diff` (local git)](#re-exports-from-mcarvinsmart-diff-local-git)
+13. [GitLab REST — pipelines & CI jobs](#gitlab-rest--pipelines--ci-jobs)
+14. [GitLab REST — events](#gitlab-rest--events)
+15. [GitLab REST — audit](#gitlab-rest--audit)
+16. [GitLab REST — project](#gitlab-rest--project)
+17. [LLM helpers (`createLabflowLlm`, policies, truncate)](#llm-helpers-createlabflowllm-policies-truncate)
+18. [Smart diff bridge (GitLab → `@mcarvin/smart-diff`)](#smart-diff-bridge-gitlab--mcarvinsmart-diff)
+19. [Insight functions — merge requests](#insight-functions--merge-requests)
+20. [Insight functions — issues](#insight-functions--issues)
+21. [Insight functions — epics](#insight-functions--epics)
+22. [Insight functions — repository](#insight-functions--repository)
+23. [Insight functions — releases](#insight-functions--releases)
+24. [Insight functions — security & audit](#insight-functions--security--audit)
+25. [Insight functions — wiki & snippets](#insight-functions--wiki--snippets)
+26. [Insight functions — search](#insight-functions--search)
+27. [Insight functions — deployments](#insight-functions--deployments)
+28. [Insight functions — pipelines & CI jobs](#insight-functions--pipelines--ci-jobs)
+29. [Insight functions — activity](#insight-functions--activity)
+30. [Insight functions — project README / metadata](#insight-functions--project-readme--metadata)
+31. [Re-exports from `@mcarvin/smart-diff` (local git)](#re-exports-from-mcarvinsmart-diff-local-git)
 
 ---
 
@@ -300,6 +302,33 @@ import { listDeployments, listEnvironments } from "@mcarvin/gitlab-llm-kit";
 
 const deps = await listDeployments(client, PROJECT, { environment: "production" });
 const envs = await listEnvironments(client, PROJECT);
+```
+
+---
+
+## GitLab REST — pipelines & CI jobs
+
+List pipelines, fetch a pipeline and its jobs, and read a job’s **raw log** (trace). `getJobTrace` uses `GitlabClient.requestText` (plain text, not JSON). Types **`Pipeline`** and **`PipelineJob`** describe the usual API fields.
+
+```ts
+import {
+  listPipelines,
+  getPipeline,
+  listPipelineJobs,
+  getJob,
+  getJobTrace,
+} from "@mcarvin/gitlab-llm-kit";
+
+// List recent pipelines (optional query: ref, sha, status, etc. — see GitLab Pipelines API)
+const pipelines = await listPipelines(client, PROJECT, { ref: "main", per_page: 20 });
+const pipelineId = pipelines[0].id;
+
+const pipeline = await getPipeline(client, PROJECT, pipelineId);
+const jobs = await listPipelineJobs(client, PROJECT, pipelineId);
+
+const jobId = jobs[0].id;
+const job = await getJob(client, PROJECT, jobId);
+const trace = await getJobTrace(client, PROJECT, jobId);
 ```
 
 ---
@@ -660,6 +689,35 @@ const text = await aiPostDeployIncidentBrief(client, llm, PROJECT, {
   environment: "production",
   perPage: 30,
 });
+```
+
+---
+
+## Insight functions — pipelines & CI jobs
+
+These helpers **read** pipeline and job metadata plus job logs from GitLab, then **send** that text to your LLM (same pattern as other `ai…` functions). They do **not** post back to GitLab. Use **`AiPipelineInsightOptions`** for `model`, `maxPromptChars`, `maxTraceCharsPerJob`, and `tracesForFailedJobsOnly` (default: attach full traces only for failed or canceled jobs on `aiPipelineRunSummary`).
+
+**`aiPipelineRunSummary`** — high-level overview of a pipeline run: stages, job outcomes, and for failures a likely reason from the logs (useful after a failed deploy or broken pipeline).
+
+**`aiPipelineJobLogSummary`** — summarize one job’s trace (single job id).
+
+```ts
+import {
+  aiPipelineRunSummary,
+  aiPipelineJobLogSummary,
+  listPipelines,
+} from "@mcarvin/gitlab-llm-kit";
+
+const pipelines = await listPipelines(client, PROJECT, { ref: "main", per_page: 5 });
+const pipelineId = pipelines[0].id;
+
+const runBrief = await aiPipelineRunSummary(client, llm, PROJECT, pipelineId, {
+  maxTraceCharsPerJob: 32_000,
+  tracesForFailedJobsOnly: true,
+});
+
+const jobId = 12345;
+const jobBrief = await aiPipelineJobLogSummary(client, llm, PROJECT, jobId);
 ```
 
 ---

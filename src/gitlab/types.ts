@@ -210,3 +210,34 @@ export type AuditEvent = {
   details?: Record<string, unknown>;
   created_at?: string;
 };
+
+/** GitLab CI pipeline (see [Pipelines API](https://docs.gitlab.com/ee/api/pipelines.html)). */
+export type Pipeline = {
+  id: number;
+  iid: number;
+  project_id?: number;
+  sha?: string;
+  ref?: string;
+  status: string;
+  source?: string;
+  created_at?: string;
+  updated_at?: string;
+  web_url?: string;
+};
+
+/** GitLab CI job (see [Jobs API](https://docs.gitlab.com/ee/api/jobs.html)). */
+export type PipelineJob = {
+  id: number;
+  status: string;
+  stage?: string;
+  name: string;
+  ref?: string;
+  tag?: boolean;
+  coverage?: number | null;
+  created_at?: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  web_url?: string;
+  failure_reason?: string | null;
+  pipeline?: { id: number; iid?: number };
+};

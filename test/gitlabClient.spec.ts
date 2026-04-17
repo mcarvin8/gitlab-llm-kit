@@ -145,4 +145,31 @@ describe("GitlabClient", () => {
     expect(init.method).toBe("POST");
     expect(init.body).toBe(JSON.stringify({ a: 1 }));
   });
+
+  it("requestText returns plain body without JSON parse", async () => {
+    const fetchFn = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => "section 1\njob output\n",
+    });
+    const c = new GitlabClient({
+      token: "t",
+      fetchFn: fetchFn as unknown as typeof fetch,
+    });
+    const text = await c.requestText("GET", "/projects/1/jobs/2/trace");
+    expect(text).toBe("section 1\njob output\n");
+  });
+
+  it("requestText throws GitlabHttpError on non-ok", async () => {
+    const fetchFn = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: async () => "missing",
+    });
+    const c = new GitlabClient({
+      token: "t",
+      fetchFn: fetchFn as unknown as typeof fetch,
+    });
+    await expect(c.requestText("GET", "/trace")).rejects.toBeInstanceOf(GitlabHttpError);
+  });
 });

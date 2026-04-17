@@ -73,6 +73,36 @@ export class GitlabClient {
     }
   }
 
+  /**
+   * Like {@link request} but returns the response body as plain text (no JSON parse).
+   * Used for endpoints such as `GET /projects/:id/jobs/:job_id/trace`.
+   */
+  async requestText(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    path: string,
+    init?: { query?: Record<string, string | number | boolean | undefined>; body?: unknown },
+  ): Promise<string> {
+    const q = init?.query ? encodeQuery(init.query) : "";
+    const url = `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}${q}`;
+
+    const res = await this.fetchImpl(url, {
+      method,
+      headers: this.headers(),
+      body:
+        init?.body !== undefined ? JSON.stringify(init.body) : undefined,
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      throw new GitlabHttpError(`GitLab ${method} ${path} failed: ${res.status}`, {
+        status: res.status,
+        body: text,
+      });
+    }
+
+    return text;
+  }
+
   /** Page through GitLab list endpoints until a short page or empty result. */
   async requestAllPages<T>(
     path: string,
