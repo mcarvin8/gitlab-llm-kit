@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.1.0...v1.2.0) (2026-04-17)
+
+
+### Features
+
+* **issues:** allow summaries to be posted to issues ([800772c](https://github.com/mcarvin8/gitlab-llm-kit/commit/800772c60a2a7c0da04f96d5a97e0e5c931122d1))
+* **releases:** set AI summaries as GitLab release descriptions ([ea6f087](https://github.com/mcarvin8/gitlab-llm-kit/commit/ea6f087ba20bde5f174afad897664db182d6f656))
+* **wiki:** add wiki CRUD helpers and optional publish for wiki/release insights ([4872410](https://github.com/mcarvin8/gitlab-llm-kit/commit/4872410bbdb50a5318650fff61f1c743590a9886))
+
+
+### Bug Fixes
+
+* **merge request:** extend comment posting to remaining MR insight functions ([4a334a5](https://github.com/mcarvin8/gitlab-llm-kit/commit/4a334a525d56ff2c2d113dc4dfcedc16999a3d8a))
+
 ## [1.1.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.0.0...v1.1.0) (2026-04-17)
 
 
