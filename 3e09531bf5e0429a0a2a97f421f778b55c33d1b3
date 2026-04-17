@@ -1,0 +1,27 @@
+src/insights/mergeRequests.ts
+  2574b1eadd23af3f 108,128,133-140,154,164,169-176,225,230,235-242
+HANDBOOK.md
+  2574b1eadd23af3f 372,390-391,401-403,409-410,414-426,443,448-450
+README.md
+  2574b1eadd23af3f 143,196-197,199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "3e09531bf5e0429a0a2a97f421f778b55c33d1b3",
+  "prompts": {
+    "2574b1eadd23af3f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "eeab1674-1b3b-489d-8bbd-633ffdb28793",
+        "model": "composer-2-fast"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 59,
+      "total_deletions": 17,
+      "accepted_lines": 59,
+      "overriden_lines": 0
+    }
+  }
+}
