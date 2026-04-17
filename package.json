@@ -1,6 +1,6 @@
 {
   "name": "@mcarvin/gitlab-llm-kit",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "TypeScript toolkit for GitLab REST API workflows with your own OpenAI-compatible LLM.",
   "author": "Matt Carvin",
   "license": "MIT",

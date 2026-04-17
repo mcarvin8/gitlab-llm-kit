@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.4.0...v1.4.1) (2026-04-17)
+
+
+### Bug Fixes
+
+* **ai:** allow createLabflowLlm with header-only gateway auth ([fe84c8a](https://github.com/mcarvin8/gitlab-llm-kit/commit/fe84c8aa99e8b8bf6021897cd1c41b3483bd1ba9))
+
 ## [1.4.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.3.0...v1.4.0) (2026-04-17)
 
 
