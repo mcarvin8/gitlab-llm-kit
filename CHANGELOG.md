@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.2.0...v1.3.0) (2026-04-17)
+
+
+### Features
+
+* **ci jobs:** add insight functions for pipeline jobs ([a8be748](https://github.com/mcarvin8/gitlab-llm-kit/commit/a8be7488b074051446f0677c39dce75234ed34d7))
+* **commits:** post insights as notes on commits ([3eefae1](https://github.com/mcarvin8/gitlab-llm-kit/commit/3eefae161fe7e12902f2b34b674a76b2dce7af86))
+
 ## [1.2.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.1.0...v1.2.0) (2026-04-17)
 
 
