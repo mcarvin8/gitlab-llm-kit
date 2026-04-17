@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.3.0...v1.4.0) (2026-04-17)
+
+
+### Features
+
+* **ai:** pass defaultHeaders through createLabflowLlm ([9691899](https://github.com/mcarvin8/gitlab-llm-kit/commit/969189970d037beba483dabfd34d7e9d1ad3181d))
+
 ## [1.3.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.2.0...v1.3.0) (2026-04-17)
 
 
