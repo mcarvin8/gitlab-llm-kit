@@ -58,7 +58,7 @@ Create a **Personal**, **Project**, or **Group** access token in GitLab with the
 | `baseUrl` | API root including `/api/v4`, e.g. `https://gitlab.company.com/api/v4` (default when omitted: `https://gitlab.com/api/v4`) |
 | `GITLAB_BASE_URL` | Convenience only—you still pass `baseUrl` in code unless you read this in your script |
 
-**Writing MR or issue comments:** To use `createMergeRequestNote`, `createIssueNote`, or insight options like `postSummaryAsMergeRequestNote` / `postSummaryAsIssueNote`, the token must include the **`api`** scope (full REST read/write). Read-only scopes are not sufficient to create notes.
+**Writing MR or issue comments, or releases:** To use `createMergeRequestNote`, `createIssueNote`, `upsertRelease`, or insight options like `postSummaryAsMergeRequestNote`, `postSummaryAsIssueNote`, or `postSummaryAsReleaseDescription`, the token must include the **`api`** scope (full REST read/write). Read-only scopes are not sufficient for those writes.
 
 Self-managed example:
 
@@ -135,7 +135,7 @@ import { summarizeGitDiff } from '@mcarvin/gitlab-llm-kit';
 await summarizeGitDiff({ from: 'origin/main', to: 'HEAD', cwd: '/path/to/repo' });
 ```
 
-### Posting summaries as merge request or issue notes
+### Posting summaries to GitLab (MR notes, issue notes, releases)
 
 **Merge requests:** Some helpers **create a merge request note** with the generated markdown:
 
@@ -144,9 +144,11 @@ await summarizeGitDiff({ from: 'origin/main', to: 'HEAD', cwd: '/path/to/repo' }
 
 **Issues:** Issue insight helpers accept **`postSummaryAsIssueNote: true`** on **`AiIssueInsightOptions`**: `aiIssueThreadSummary`, `aiStaleIssueSummary`, and `aiIssueSuggestedNextStep`.
 
-You can also call **`createMergeRequestNote`** or **`createIssueNote`** yourself for custom text. These use `POST /projects/…/merge_requests/…/notes` or `POST /projects/…/issues/…/notes` and require a GitLab **personal, project, or group access token** with the **`api`** scope. Without it, GitLab returns 403 for create-note requests.
+**Releases:** **`aiDraftReleaseNotes`** accepts **`postSummaryAsReleaseDescription: true`** on **`AiDraftReleaseNotesOptions`** to set the GitLab release **`description`** for the given tag (via **`upsertRelease`** — `PUT` if the release exists, otherwise `POST`). If the Git tag does not exist yet, pass **`releaseRef`** (branch or SHA) so GitLab can create the tag when creating the release.
 
-**If posting fails:** The client throws **`GitlabHttpError`** (see `GitlabHttpError` in exports). For a missing or wrong scope you typically get **`status: 403`** and a JSON **`body`** from GitLab such as `"error":"insufficient_scope"` and `"error_description":"The request requires higher privileges than provided by the access token."` Read-only scopes (e.g. `read_api` only) are enough to **fetch** project/MR/issue data and run the LLM, but not to **create** notes—use a token that includes **`api`** (full REST API access) for write operations. Your GitLab version’s token UI may show other scope names; match whatever your admin documents for creating notes via the API.
+You can also call **`createMergeRequestNote`**, **`createIssueNote`**, or **`upsertRelease`** yourself. Notes use `POST …/merge_requests/…/notes` or `POST …/issues/…/notes`; releases use the [Releases API](https://docs.gitlab.com/ee/api/releases.html). All require a token with the **`api`** scope; otherwise GitLab often returns **403**.
+
+**If posting fails:** The client throws **`GitlabHttpError`** (see `GitlabHttpError` in exports). For a missing or wrong scope you typically get **`status: 403`** and a JSON **`body`** from GitLab such as `"error":"insufficient_scope"` and `"error_description":"The request requires higher privileges than provided by the access token."` Read-only scopes (e.g. `read_api` only) are enough to **fetch** project data and run the LLM, but not to **write** notes or releases—use a token that includes **`api`** (full REST API access). Your GitLab version’s token UI may show other scope names; follow your admin’s guidance.
 
 ---
 
@@ -162,7 +164,7 @@ Low-level `request` / `requestAllPages` plus typed wrappers, for example:
 | Issues | `getIssue`, `listIssueNotes`, `createIssueNote`, `listProjectIssues` |
 | Epics | `getEpic`, `listEpicIssues`, `listGroupEpics` |
 | Repository | `listCommits`, `listCommitComments`, `getFile`, `compareRefs` |
-| Releases | `getReleaseByTag`, `listReleases` |
+| Releases | `getReleaseByTag`, `listReleases`, `upsertRelease` |
 | Security | `listVulnerabilityFindings` |
 | Wiki & snippets | `listWikiPages`, `getWikiPage`, `listProjectSnippets`, `getSnippet` |
 | Search | `searchGitlab`, `searchInProject`, `searchInGroup` |
@@ -209,7 +211,7 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 | | `aiExplainRepositoryPath` | Explain a file path (size limits; scrub secrets). |
 | | `aiCompareRefsNarrative` | Narrative between two refs (no full diff in prompt). |
 | | `aiConventionalCommitNudge` | Conventional Commits suggestions from sample messages. |
-| **Releases** | `aiDraftReleaseNotes` | Draft notes from tag / commits. |
+| **Releases** | `aiDraftReleaseNotes` | Draft notes from tag / commits. Optional `postSummaryAsReleaseDescription` writes the draft to the GitLab release (PAT with **`api`** scope). |
 | | `aiListReleasesOverview` | Cadence / naming summary from release list. |
 | **Security & compliance** | `aiVulnerabilityFindingsBrief` | Triage-oriented finding summary. |
 | | `aiAuditEventsDashboardSummary` | Audit stream summary for dashboards. |

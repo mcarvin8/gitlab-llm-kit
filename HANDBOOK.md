@@ -213,10 +213,16 @@ const cmp = await compareRefs(client, PROJECT, "v1.0.0", "main");
 ## GitLab REST — releases
 
 ```ts
-import { getReleaseByTag, listReleases } from "@mcarvin/gitlab-llm-kit";
+import { getReleaseByTag, listReleases, upsertRelease } from "@mcarvin/gitlab-llm-kit";
 
 const rel = await getReleaseByTag(client, PROJECT, "v1.0.0");
 const all = await listReleases(client, PROJECT);
+
+const saved = await upsertRelease(client, PROJECT, "v1.1.0", {
+  description: "## Highlights\n\n…",
+  // ref: "main", // only when creating a release and the tag does not exist yet
+});
+void saved.tag_name;
 ```
 
 ---
@@ -542,11 +548,15 @@ const nudge = await aiConventionalCommitNudge(
 
 ## Insight functions — releases
 
+`aiDraftReleaseNotes` options include **`AiDraftReleaseNotesOptions`**: `priorTag`, `postSummaryAsReleaseDescription`, `releaseRef` (if GitLab must create the tag when creating the release), and `releaseName`. Posting the description requires a PAT with the **`api`** scope.
+
 ```ts
 import { aiDraftReleaseNotes, aiListReleasesOverview } from "@mcarvin/gitlab-llm-kit";
 
 const draft = await aiDraftReleaseNotes(client, llm, PROJECT, "v1.1.0", {
   priorTag: "v1.0.0",
+  // postSummaryAsReleaseDescription: true,
+  // releaseRef: "main",
 });
 
 const overview = await aiListReleasesOverview(client, llm, PROJECT);
@@ -720,6 +730,7 @@ Import types alongside values when you need them:
 
 ```ts
 import type {
+  AiDraftReleaseNotesOptions,
   AiIssueInsightOptions,
   AiMergeRequestInsightOptions,
   MergeRequest,
@@ -728,6 +739,7 @@ import type {
   LabflowLlm,
   SummarizeGitLabMergeRequestDiffOptions,
   ReviewSinceOptions,
+  UpsertReleaseParams,
   ExplainPathOptions,
   GitDiffAiSummaryOptions,
   CommitInfo,

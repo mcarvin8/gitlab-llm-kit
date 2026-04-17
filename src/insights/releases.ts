@@ -6,14 +6,29 @@ import {
   compareRefs,
   listCommits,
 } from "../gitlab/repository.js";
-import { getReleaseByTag, listReleases } from "../gitlab/releases.js";
+import { getReleaseByTag, listReleases, upsertRelease } from "../gitlab/releases.js";
+
+export type AiDraftReleaseNotesOptions = {
+  model?: string;
+  maxPromptChars?: number;
+  priorTag?: string;
+  /**
+   * When true, create or update the GitLab release for `tagName` with the generated markdown as `description`.
+   * Requires token with API write access (same privilege story as MR/issue notes).
+   */
+  postSummaryAsReleaseDescription?: boolean;
+  /** When creating a release and the Git tag does not exist yet, branch or SHA for `upsertRelease`. */
+  releaseRef?: string;
+  /** Display name for a newly created release; optional. */
+  releaseName?: string;
+};
 
 export async function aiDraftReleaseNotes(
   client: GitlabClient,
   llm: LabflowLlm,
   projectId: string | number,
   tagName: string,
-  options?: { model?: string; maxPromptChars?: number; priorTag?: string },
+  options?: AiDraftReleaseNotesOptions,
 ): Promise<string> {
   const release = await getReleaseByTag(client, projectId, tagName).catch(
     () => null,
@@ -41,11 +56,21 @@ export async function aiDraftReleaseNotes(
     options?.maxPromptChars ?? 100_000,
   );
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nDraft improved release notes for humans: highlights, breaking changes if any, upgrade hints. This is a draft. Markdown.`,
     user,
   });
+
+  if (options?.postSummaryAsReleaseDescription) {
+    await upsertRelease(client, projectId, tagName, {
+      description: summary,
+      ref: options.releaseRef,
+      name: options.releaseName,
+    });
+  }
+
+  return summary;
 }
 
 export async function aiListReleasesOverview(

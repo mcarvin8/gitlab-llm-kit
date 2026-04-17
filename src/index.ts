@@ -49,7 +49,12 @@ export {
   getFile,
   compareRefs,
 } from "./gitlab/repository.js";
-export { getReleaseByTag, listReleases } from "./gitlab/releases.js";
+export {
+  getReleaseByTag,
+  listReleases,
+  upsertRelease,
+  type UpsertReleaseParams,
+} from "./gitlab/releases.js";
 export { listVulnerabilityFindings } from "./gitlab/security.js";
 export {
   listWikiPages,
@@ -109,7 +114,11 @@ export {
   type ExplainPathOptions,
 } from "./insights/repository.js";
 
-export { aiDraftReleaseNotes, aiListReleasesOverview } from "./insights/releases.js";
+export {
+  aiDraftReleaseNotes,
+  aiListReleasesOverview,
+  type AiDraftReleaseNotesOptions,
+} from "./insights/releases.js";
 
 export {
   aiVulnerabilityFindingsBrief,

@@ -1,4 +1,5 @@
 import type { GitlabClient } from "@src/gitlab/client.js";
+import { GitlabHttpError } from "@src/gitlab/errors.js";
 import { listProjectAuditEvents } from "@src/gitlab/audit.js";
 import {
   listDeployments,
@@ -11,11 +12,13 @@ import {
 } from "@src/gitlab/epics.js";
 import { listGroupEvents, listProjectEvents } from "@src/gitlab/events.js";
 import {
+  createIssueNote,
   getIssue,
   listIssueNotes,
   listProjectIssues,
 } from "@src/gitlab/issues.js";
 import {
+  createMergeRequestNote,
   getMergeRequest,
   getMergeRequestChanges,
   listMergeRequestCommits,
@@ -23,7 +26,7 @@ import {
   listMergeRequestNotes,
 } from "@src/gitlab/mergeRequests.js";
 import { getProject, getReadmeFile } from "@src/gitlab/projectMeta.js";
-import { getReleaseByTag, listReleases } from "@src/gitlab/releases.js";
+import { getReleaseByTag, listReleases, upsertRelease } from "@src/gitlab/releases.js";
 import {
   compareRefs,
   getFile,
@@ -106,6 +109,20 @@ describe("gitlab API wrappers", () => {
     );
   });
 
+  it("createMergeRequestNote", async () => {
+    const c = mockClient();
+    c.request.mockResolvedValue({ id: 1, body: "hello" });
+    const note = await createMergeRequestNote(c, "g/p", 10, {
+      body: "## Summary\n",
+    });
+    expect(c.request).toHaveBeenCalledWith(
+      "POST",
+      "/projects/g%2Fp/merge_requests/10/notes",
+      { body: { body: "## Summary\n" } },
+    );
+    expect(note.body).toBe("hello");
+  });
+
   it("getIssue and listIssueNotes and listProjectIssues", async () => {
     const c = mockClient();
     c.request.mockResolvedValue({ id: 1, iid: 1, title: "i", state: "open" });
@@ -123,6 +140,21 @@ describe("gitlab API wrappers", () => {
       "/projects/g%2Fp/issues",
       { state: "opened" },
     );
+
+    await listProjectIssues(c, "g/p");
+    expect(c.requestAllPages).toHaveBeenCalledWith("/projects/g%2Fp/issues", {});
+  });
+
+  it("createIssueNote", async () => {
+    const c = mockClient();
+    c.request.mockResolvedValue({ id: 2, body: "note" });
+    const note = await createIssueNote(c, "g/p", 7, { body: "LGTM" });
+    expect(c.request).toHaveBeenCalledWith(
+      "POST",
+      "/projects/g%2Fp/issues/7/notes",
+      { body: { body: "LGTM" } },
+    );
+    expect(note.body).toBe("note");
   });
 
   it("epics", async () => {
@@ -184,6 +216,91 @@ describe("gitlab API wrappers", () => {
     c.requestAllPages.mockResolvedValue([]);
     await listReleases(c, "p");
     expect(c.requestAllPages).toHaveBeenCalledWith("/projects/p/releases");
+  });
+
+  it("upsertRelease updates when release exists", async () => {
+    const c = mockClient();
+    c.request
+      .mockResolvedValueOnce({ tag_name: "v2", description: "old" })
+      .mockResolvedValueOnce({ tag_name: "v2", description: "new" });
+    const r = await upsertRelease(c, "p", "v2.0.0", { description: "new" });
+    expect(c.request).toHaveBeenNthCalledWith(
+      1,
+      "GET",
+      "/projects/p/releases/v2.0.0",
+    );
+    expect(c.request).toHaveBeenNthCalledWith(2, "PUT", "/projects/p/releases/v2.0.0", {
+      body: { description: "new" },
+    });
+    expect(r.description).toBe("new");
+  });
+
+  it("upsertRelease PUT includes name when provided", async () => {
+    const c = mockClient();
+    c.request
+      .mockResolvedValueOnce({ tag_name: "v1" })
+      .mockResolvedValueOnce({ tag_name: "v1", name: "R1" });
+    await upsertRelease(c, "p", "v1", {
+      description: "d",
+      name: "Release 1",
+    });
+    expect(c.request).toHaveBeenNthCalledWith(2, "PUT", "/projects/p/releases/v1", {
+      body: { description: "d", name: "Release 1" },
+    });
+  });
+
+  it("upsertRelease creates when GET returns 404", async () => {
+    const c = mockClient();
+    c.request
+      .mockRejectedValueOnce(
+        new GitlabHttpError("missing", { status: 404, body: "{}" }),
+      )
+      .mockResolvedValueOnce({
+        tag_name: "v3",
+        name: "v3",
+        description: "fresh",
+      });
+    const r = await upsertRelease(c, "p", "v3", { description: "fresh" });
+    expect(c.request).toHaveBeenNthCalledWith(2, "POST", "/projects/p/releases", {
+      body: {
+        tag_name: "v3",
+        description: "fresh",
+        name: "v3",
+      },
+    });
+    expect(r.description).toBe("fresh");
+  });
+
+  it("upsertRelease POST includes ref when provided", async () => {
+    const c = mockClient();
+    c.request
+      .mockRejectedValueOnce(
+        new GitlabHttpError("missing", { status: 404, body: "{}" }),
+      )
+      .mockResolvedValueOnce({ tag_name: "v4" });
+    await upsertRelease(c, "p", "v4", {
+      description: "d",
+      ref: "main",
+      name: "V four",
+    });
+    expect(c.request).toHaveBeenNthCalledWith(2, "POST", "/projects/p/releases", {
+      body: {
+        tag_name: "v4",
+        description: "d",
+        name: "V four",
+        ref: "main",
+      },
+    });
+  });
+
+  it("upsertRelease rethrows non-404 from getReleaseByTag", async () => {
+    const c = mockClient();
+    c.request.mockRejectedValueOnce(
+      new GitlabHttpError("nope", { status: 403, body: "{}" }),
+    );
+    await expect(
+      upsertRelease(c, "p", "t", { description: "x" }),
+    ).rejects.toMatchObject({ status: 403 });
   });
 
   it("listVulnerabilityFindings", async () => {
