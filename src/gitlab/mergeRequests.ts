@@ -30,6 +30,21 @@ export async function listMergeRequestNotes(
   );
 }
 
+/** Create a general (non-inline) note on the merge request. Requires API token with write access. */
+export async function createMergeRequestNote(
+  client: GitlabClient,
+  projectId: string | number,
+  mergeRequestIid: number,
+  params: { body: string },
+): Promise<Note> {
+  const id = encodeProjectId(projectId);
+  return client.request<Note>(
+    "POST",
+    `/projects/${id}/merge_requests/${mergeRequestIid}/notes`,
+    { body: params },
+  );
+}
+
 export async function getMergeRequestChanges(
   client: GitlabClient,
   projectId: string | number,

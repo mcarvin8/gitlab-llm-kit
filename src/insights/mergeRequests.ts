@@ -3,6 +3,7 @@ import { POLICY_DEFAULT } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import {
+  createMergeRequestNote,
   getMergeRequest,
   listMergeRequestDiscussions,
   listMergeRequestNotes,
@@ -32,13 +33,33 @@ function formatMrHeader(mr: MergeRequest): string {
     .join("\n");
 }
 
+export type AiMergeRequestInsightOptions = {
+  model?: string;
+  maxPromptChars?: number;
+  /** When true, POST the generated summary as a new merge request note (requires token with API write access). */
+  postSummaryAsMergeRequestNote?: boolean;
+};
+
+async function maybePostMergeRequestSummary(
+  client: GitlabClient,
+  projectId: string | number,
+  mergeRequestIid: number,
+  summary: string,
+  post: boolean | undefined,
+): Promise<void> {
+  if (!post) {
+    return;
+  }
+  await createMergeRequestNote(client, projectId, mergeRequestIid, { body: summary });
+}
+
 /** Compact digest of MR discussion (title, description, all notes / discussion threads). */
 export async function aiMergeRequestDiscussionDigest(
   client: GitlabClient,
   llm: LabflowLlm,
   projectId: string | number,
   mergeRequestIid: number,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiMergeRequestInsightOptions,
 ): Promise<string> {
   const mr = await getMergeRequest(client, projectId, mergeRequestIid);
   const [notes, discussions] = await Promise.all([
@@ -57,11 +78,19 @@ export async function aiMergeRequestDiscussionDigest(
   const raw = `${formatMrHeader(mr)}\n\n## Notes\n${notesBlock}\n\n## Discussions\n${discBlock}`;
   const user = truncateForPrompt(raw, options?.maxPromptChars ?? 100_000);
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nSummarize merge request discussion for a busy reviewer: themes, decisions, open questions. Markdown.`,
     user,
   });
+  await maybePostMergeRequestSummary(
+    client,
+    projectId,
+    mergeRequestIid,
+    summary,
+    options?.postSummaryAsMergeRequestNote,
+  );
+  return summary;
 }
 
 export type ReviewSinceOptions = {
@@ -137,7 +166,7 @@ export async function aiMergeRequestActionItems(
   llm: LabflowLlm,
   projectId: string | number,
   mergeRequestIid: number,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiMergeRequestInsightOptions,
 ): Promise<string> {
   const mr = await getMergeRequest(client, projectId, mergeRequestIid);
   const [notes, discussions] = await Promise.all([
@@ -153,11 +182,19 @@ export async function aiMergeRequestActionItems(
   const raw = `${formatMrHeader(mr)}\n\n${notes.map(formatNote).join("\n\n")}\n\n${discText}`;
   const user = truncateForPrompt(raw, options?.maxPromptChars ?? 100_000);
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nExtract concrete action items (owner if known, else TBD). Checklist Markdown.`,
     user,
   });
+  await maybePostMergeRequestSummary(
+    client,
+    projectId,
+    mergeRequestIid,
+    summary,
+    options?.postSummaryAsMergeRequestNote,
+  );
+  return summary;
 }
 
 /**

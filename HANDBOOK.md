@@ -1,6 +1,6 @@
-# @mcarvin/gitlab-llm-kit — examples handbook
+# Handbook
 
-This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. It does **not** write to GitLab (no MR/issue comments); everything is **read APIs + LLM output in memory** unless you add your own `POST` calls.
+This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. By default, insight functions only **read** from GitLab and return text in memory. **Optional** paths post to GitLab: `createMergeRequestNote`, and `postSummaryAsMergeRequestNote` on selected helpers—those require a token with the **`api`** scope (see [GitLab REST — merge requests](#gitlab-rest--merge-requests)).
 
 **Convention:** replace placeholders (`YOUR_PROJECT`, `42`, …). Use **`merge_request_iid` / `issue_iid`** from the GitLab URL, not the global database id.
 
@@ -130,6 +130,21 @@ const notes = await listMergeRequestNotes(client, PROJECT, 42);
 const changes = await getMergeRequestChanges(client, PROJECT, 42);
 const commits = await listMergeRequestCommits(client, PROJECT, 42);
 const discussions = await listMergeRequestDiscussions(client, PROJECT, 42);
+```
+
+### `createMergeRequestNote` (write)
+
+Creates a **general** (non-inline) note on the merge request—the same kind of comment as a normal MR discussion note.
+
+Use a GitLab **personal, project, or group access token** with the **`api`** scope. Read-only scopes (`read_api`, …) are **not** enough to create notes.
+
+```ts
+import { createMergeRequestNote } from "@mcarvin/gitlab-llm-kit";
+
+const created = await createMergeRequestNote(client, PROJECT, 42, {
+  body: "## Summary\n\nYour markdown here.",
+});
+void created.id;
 ```
 
 ---
@@ -316,6 +331,8 @@ Uses **`@mcarvin/smart-diff`** env (`OPENAI_API_KEY` / `LLM_*`, etc.), not only 
 
 ### `summarizeMergeRequestDiffWithSmartDiff`
 
+After the summary is generated, you can **post it as a merge request note** with `postSummaryAsMergeRequestNote: true`. That issues `POST …/merge_requests/:iid/notes` and requires a token with the **`api`** scope (same as `createMergeRequestNote`).
+
 ```ts
 import { summarizeMergeRequestDiffWithSmartDiff } from "@mcarvin/gitlab-llm-kit";
 
@@ -324,6 +341,7 @@ const markdown = await summarizeMergeRequestDiffWithSmartDiff({
   projectId: PROJECT,
   mergeRequestIid: 42,
   teamName: "Platform",
+  // postSummaryAsMergeRequestNote: true,  // optional; needs PAT with `api` scope
   // model: "gpt-4o",
   // maxDiffChars: 80_000,
   // openAiClientProvider: async () => createOpenAiLikeClient(),
@@ -353,12 +371,15 @@ All take `(client, llm, projectId, mergeRequestIid, …)` unless noted.
 
 ### `aiMergeRequestDiscussionDigest`
 
+Options use `AiMergeRequestInsightOptions` (`model`, `maxPromptChars`, `postSummaryAsMergeRequestNote`). Set `postSummaryAsMergeRequestNote: true` to post the digest as an MR note after generation; requires a PAT with the **`api`** scope.
+
 ```ts
 import { aiMergeRequestDiscussionDigest } from "@mcarvin/gitlab-llm-kit";
 
 const text = await aiMergeRequestDiscussionDigest(client, llm, PROJECT, 42, {
   model: "gpt-4o-mini",
   maxPromptChars: 100_000,
+  // postSummaryAsMergeRequestNote: true,
 });
 ```
 
@@ -389,10 +410,14 @@ const text = await aiSuggestedMergeRequestReply(client, llm, PROJECT, 42, {
 
 ### `aiMergeRequestActionItems`
 
+Same optional `postSummaryAsMergeRequestNote` as `aiMergeRequestDiscussionDigest` (PAT with **`api`** scope to post).
+
 ```ts
 import { aiMergeRequestActionItems } from "@mcarvin/gitlab-llm-kit";
 
-const text = await aiMergeRequestActionItems(client, llm, PROJECT, 42);
+const text = await aiMergeRequestActionItems(client, llm, PROJECT, 42, {
+  // postSummaryAsMergeRequestNote: true,
+});
 ```
 
 ### `aiMergeRequestReviewerBriefingMeta`
@@ -658,6 +683,7 @@ Import types alongside values when you need them:
 
 ```ts
 import type {
+  AiMergeRequestInsightOptions,
   MergeRequest,
   Issue,
   GitlabClientOptions,

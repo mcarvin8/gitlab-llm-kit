@@ -9,6 +9,7 @@ import {
 
 import type { GitlabClient } from "../gitlab/client.js";
 import {
+  createMergeRequestNote,
   getMergeRequest,
   getMergeRequestChanges,
   listMergeRequestCommits,
@@ -28,6 +29,8 @@ export type SummarizeGitLabMergeRequestDiffOptions = {
   systemPrompt?: string;
   /** When set, uses this instead of `createOpenAiLikeClient()` from env. */
   openAiClientProvider?: () => Promise<OpenAiLikeClient>;
+  /** When true, POST the generated summary as a new merge request note (requires token with API write access). */
+  postSummaryAsMergeRequestNote?: boolean;
 };
 
 function buildUnifiedDiffFromMrChanges(
@@ -83,7 +86,7 @@ export async function summarizeMergeRequestDiffWithSmartDiff(
   const provider =
     options.openAiClientProvider ?? (() => createOpenAiLikeClient());
 
-  return generateSummary({
+  const summary = await generateSummary({
     diffText,
     fileNames,
     commits: commitInfos,
@@ -97,6 +100,14 @@ export async function summarizeMergeRequestDiffWithSmartDiff(
     },
     openAiClientProvider: provider,
   });
+
+  if (options.postSummaryAsMergeRequestNote) {
+    await createMergeRequestNote(options.client, options.projectId, options.mergeRequestIid, {
+      body: summary,
+    });
+  }
+
+  return summary;
 }
 
 export type SummarizeCompareDiffOptions = {

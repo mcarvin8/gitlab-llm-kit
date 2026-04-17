@@ -7,7 +7,7 @@
 
 TypeScript library for **AI-assisted workflows on top of the GitLab REST API**. It fetches merge requests, issues, diffs, wikis, releases, and other resources using ordinary **personal or project access tokens**, then generates summaries and review aids through an **OpenAI-compatible Chat Completions API**—including the **same LLM stack** used by [`@mcarvin/smart-diff`](https://www.npmjs.com/package/@mcarvin/smart-diff) for **git diff** summarization (local repos) and for **GitLab merge request** patches when you use the bundled helpers.
 
-**Examples handbook:** runnable snippets for every public export are in **[HANDBOOK.md](HANDBOOK.md)**.
+**Examples handbook:** runnable snippets for every public export are in **[HANDBOOK.md](https://github.com/mcarvin8/gitlab-llm-kit/blob/main/HANDBOOK.md)**.
 
 ## Why this exists (and not GitLab Duo)
 
@@ -33,7 +33,8 @@ So teams on **self-managed GitLab** without Duo can still get MR/issue summaries
 - **Node.js** 20+
 - Network access to **your GitLab** (`https://your.gitlab.example.com/api/v4` or GitLab.com)
 - Network access to **your OpenAI-compatible** service (`OPENAI_BASE_URL` / company gateway)
-- A **GitLab token** with scopes appropriate to what you call (e.g. `read_api`, `read_repository` for MR diffs—follow your admin’s least-privilege guidance)
+- A **GitLab token** with scopes appropriate to what you call (e.g. `read_api`, `read_repository` for MR diffs—follow your admin’s least-privilege guidance). **Posting merge request notes** (optional on some helpers) requires a token with the **`api`** scope so GitLab accepts `POST` to the notes API.
+- **`@mcarvin/smart-diff` and Git:** Helpers that summarize a **GitLab merge request** (`summarizeMergeRequestDiffWithSmartDiff`, etc.) only use the GitLab REST API plus the LLM—**no local Git install** is required. Helpers that summarize a **local clone** (`summarizeGitDiff`, `generateSummary` with patches from disk, etc.) need the **`git` CLI on your `PATH`**. On Windows, install [Git for Windows](https://git-scm.com/download/win) (or another distribution) and ensure `git` is available to the same environment as Node—often **Git Bash** or **PowerShell** after choosing “Git from the command line” during setup. CI images usually include `git`; add it explicitly if your runner image is minimal.
 
 ---
 
@@ -56,6 +57,8 @@ Create a **Personal**, **Project**, or **Group** access token in GitLab with the
 | `token` (constructor) | GitLab token string |
 | `baseUrl` | API root including `/api/v4`, e.g. `https://gitlab.company.com/api/v4` (default when omitted: `https://gitlab.com/api/v4`) |
 | `GITLAB_BASE_URL` | Convenience only—you still pass `baseUrl` in code unless you read this in your script |
+
+**Writing MR comments:** To use `createMergeRequestNote` or insight options like `postSummaryAsMergeRequestNote`, the token must include the **`api`** scope (full REST read/write). Read-only scopes are not sufficient to create notes.
 
 Self-managed example:
 
@@ -104,6 +107,7 @@ const markdown = await summarizeMergeRequestDiffWithSmartDiff({
   projectId: 'namespace/project', // or numeric project id
   mergeRequestIid: 42,            // IID from the MR URL
   teamName: 'Platform',
+  // postSummaryAsMergeRequestNote: true,  // optional: POST summary as an MR note (needs PAT with `api` scope)
 });
 
 console.log(markdown);
@@ -117,7 +121,9 @@ import { GitlabClient, createLabflowLlm, aiMergeRequestDiscussionDigest } from '
 const client = new GitlabClient({ token: process.env.GITLAB_TOKEN, baseUrl: '...' });
 const llm = createLabflowLlm();
 
-const digest = await aiMergeRequestDiscussionDigest(client, llm, 'namespace/project', 42);
+const digest = await aiMergeRequestDiscussionDigest(client, llm, 'namespace/project', 42, {
+  // postSummaryAsMergeRequestNote: true,  // optional: POST digest as an MR note (needs PAT with `api` scope)
+});
 console.log(digest);
 ```
 
@@ -129,6 +135,15 @@ import { summarizeGitDiff } from '@mcarvin/gitlab-llm-kit';
 await summarizeGitDiff({ from: 'origin/main', to: 'HEAD', cwd: '/path/to/repo' });
 ```
 
+### Posting summaries as merge request notes
+
+Some helpers can **create a merge request note** with the generated markdown:
+
+- `summarizeMergeRequestDiffWithSmartDiff` — set `postSummaryAsMergeRequestNote: true`.
+- `aiMergeRequestDiscussionDigest` and `aiMergeRequestActionItems` — same option on their options object (`AiMergeRequestInsightOptions`).
+
+You can also call **`createMergeRequestNote`** yourself for custom text. All of these use `POST /projects/…/merge_requests/…/notes` and require a GitLab **personal, project, or group access token** with the **`api`** scope. Without it, GitLab returns 403 for create-note requests.
+
 ---
 
 ## What’s included
@@ -139,7 +154,7 @@ Low-level `request` / `requestAllPages` plus typed wrappers, for example:
 
 | Area | Exports (representative) |
 |------|---------------------------|
-| Merge requests | `getMergeRequest`, `listMergeRequestNotes`, `getMergeRequestChanges`, `listMergeRequestCommits`, `listMergeRequestDiscussions` |
+| Merge requests | `getMergeRequest`, `listMergeRequestNotes`, `createMergeRequestNote`, `getMergeRequestChanges`, `listMergeRequestCommits`, `listMergeRequestDiscussions` |
 | Issues | `getIssue`, `listIssueNotes`, `listProjectIssues` |
 | Epics | `getEpic`, `listEpicIssues`, `listGroupEpics` |
 | Repository | `listCommits`, `listCommitComments`, `getFile`, `compareRefs` |
@@ -166,7 +181,7 @@ Utilities: `encodeProjectId`, `encodeGroupId`, `encodeQuery`, `GitlabHttpError`,
 
 | Export | Purpose |
 |--------|---------|
-| `summarizeMergeRequestDiffWithSmartDiff` | MR `/changes` patches → `generateSummary`. |
+| `summarizeMergeRequestDiffWithSmartDiff` | MR `/changes` patches → `generateSummary`. Optional `postSummaryAsMergeRequestNote` posts the markdown as an MR note (PAT with **`api`** scope). |
 | `summarizeCompareDiffWithSmartDiff` | `/repository/compare` → `generateSummary`. |
 
 ### Insight functions (`ai…` + helpers)
@@ -175,10 +190,10 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 
 | Area | Function | Purpose |
 |------|----------|---------|
-| **Merge requests** | `aiMergeRequestDiscussionDigest` | Thread + title/description digest. |
+| **Merge requests** | `aiMergeRequestDiscussionDigest` | Thread + title/description digest. Optional `postSummaryAsMergeRequestNote` posts the summary as an MR note (PAT with **`api`** scope). |
 | | `aiWhatChangedSinceLastReview` | Notes since a timestamp checkpoint. |
 | | `aiSuggestedMergeRequestReply` | Draft reply text. |
-| | `aiMergeRequestActionItems` | Extract action items. |
+| | `aiMergeRequestActionItems` | Extract action items. Optional `postSummaryAsMergeRequestNote` posts the checklist as an MR note (PAT with **`api`** scope). |
 | | `aiMergeRequestReviewerBriefingMeta` | Reviewer briefing from metadata (no diff). |
 | **Issues** | `aiIssueThreadSummary` | Long thread summary. |
 | | `aiStaleIssueSummary` | Staleness / closure hints. |
@@ -222,4 +237,4 @@ The authoritative list of exports is **`src/index.ts`**.
 
 ## License
 
-MIT — see [LICENSE.md](LICENSE.md).
+MIT — see [LICENSE.md](https://github.com/mcarvin8/gitlab-llm-kit/blob/main/LICENSE.md).

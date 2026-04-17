@@ -27,6 +27,7 @@ export type {
 export {
   getMergeRequest,
   listMergeRequestNotes,
+  createMergeRequestNote,
   getMergeRequestChanges,
   listMergeRequestCommits,
   listMergeRequestDiscussions,
@@ -80,6 +81,7 @@ export {
   aiSuggestedMergeRequestReply,
   aiMergeRequestActionItems,
   aiMergeRequestReviewerBriefingMeta,
+  type AiMergeRequestInsightOptions,
   type ReviewSinceOptions,
 } from "./insights/mergeRequests.js";
 
