@@ -147,6 +147,8 @@ const created = await createMergeRequestNote(client, PROJECT, 42, {
 void created.id;
 ```
 
+Wrong scope usually surfaces as **`GitlabHttpError`** with **`status` 403** and a JSON **`body`** containing `"error":"insufficient_scope"` (see README → *Posting summaries as merge request notes*).
+
 ---
 
 ## GitLab REST — issues

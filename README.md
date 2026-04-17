@@ -144,6 +144,8 @@ Some helpers can **create a merge request note** with the generated markdown:
 
 You can also call **`createMergeRequestNote`** yourself for custom text. All of these use `POST /projects/…/merge_requests/…/notes` and require a GitLab **personal, project, or group access token** with the **`api`** scope. Without it, GitLab returns 403 for create-note requests.
 
+**If posting fails:** The client throws **`GitlabHttpError`** (see `GitlabHttpError` in exports). For a missing or wrong scope you typically get **`status: 403`** and a JSON **`body`** from GitLab such as `"error":"insufficient_scope"` and `"error_description":"The request requires higher privileges than provided by the access token."` Read-only scopes (e.g. `read_api` only) are enough to **fetch** MR data and run the LLM, but not to **create** notes—use a token that includes **`api`** (full REST API access) for write operations. Your GitLab version’s token UI may show other scope names; match whatever your admin documents for “create merge request notes” via the API.
+
 ---
 
 ## What’s included
