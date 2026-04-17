@@ -1,0 +1,44 @@
+src/gitlab/client.ts
+  12937c9bd2e712ee 76-105
+src/index.ts
+  12937c9bd2e712ee 19-20,75-81,158-163
+src/gitlab/pipelines.ts
+  12937c9bd2e712ee 1-56
+test/gitlabPipelines.spec.ts
+  12937c9bd2e712ee 1-76
+README.md
+  12937c9bd2e712ee 179,227-228
+HANDBOOK.md
+  12937c9bd2e712ee 35-53,309-335,696-720
+src/insights/pipelines.ts
+  12937c9bd2e712ee 1-138
+src/gitlab/types.ts
+  12937c9bd2e712ee 213-243
+test/gitlabClient.spec.ts
+  12937c9bd2e712ee 148-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "a8be7488b074051446f0677c39dce75234ed34d7",
+  "prompts": {
+    "12937c9bd2e712ee": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8173ecc5-3c36-42be-8762-22d8d4c2c984",
+        "model": "composer-2-fast"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 457,
+      "total_deletions": 27,
+      "accepted_lines": 599,
+      "overriden_lines": 1
+    }
+  },
+  "humans": {
+    "h_b104b674256482": {
+      "author": "Matt Carvin"
+    }
+  }
+}
