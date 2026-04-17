@@ -1,6 +1,6 @@
 # Handbook
 
-This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. By default, insight functions only **read** from GitLab and return text in memory. **Optional** paths post to GitLab: `createMergeRequestNote` / `createIssueNote`, `postSummaryAsMergeRequestNote` on selected MR helpers, and `postSummaryAsIssueNote` on selected issue helpers—those require a token with the **`api`** scope (see [GitLab REST — merge requests](#gitlab-rest--merge-requests) and [GitLab REST — issues](#gitlab-rest--issues)).
+This document complements the [README](README.md) with **copy-paste-oriented examples** for public exports. By default, insight functions only **read** from GitLab and return text in memory. **Optional** paths post to GitLab: `createMergeRequestNote` / `createIssueNote`, `upsertRelease`, `upsertWikiPage`, and matching insight flags—those require a token with the **`api`** scope (see [GitLab REST — merge requests](#gitlab-rest--merge-requests), [issues](#gitlab-rest--issues), [releases](#gitlab-rest--releases), and [wiki](#gitlab-rest--wiki--snippets)).
 
 **Convention:** replace placeholders (`YOUR_PROJECT`, `42`, …). Use **`merge_request_iid` / `issue_iid`** from the GitLab URL, not the global database id.
 
@@ -245,12 +245,31 @@ const findings = await listVulnerabilityFindings(client, PROJECT, {
 import {
   listWikiPages,
   getWikiPage,
+  createWikiPage,
+  updateWikiPage,
+  upsertWikiPage,
   listProjectSnippets,
   getSnippet,
 } from "@mcarvin/gitlab-llm-kit";
 
 const index = await listWikiPages(client, PROJECT);
 const page = await getWikiPage(client, PROJECT, "home", "optional-version-id");
+
+const created = await createWikiPage(client, PROJECT, {
+  title: "Runbook",
+  content: "# Runbook\n",
+  format: "markdown",
+});
+
+await updateWikiPage(client, PROJECT, "release-overview", {
+  content: "## Updated\n",
+});
+
+await upsertWikiPage(client, PROJECT, "release-cadence", {
+  content: "# Cadence\n",
+  title: "Release cadence",
+});
+
 const snippets = await listProjectSnippets(client, PROJECT);
 const sn = await getSnippet(client, 12345);
 ```
@@ -550,6 +569,8 @@ const nudge = await aiConventionalCommitNudge(
 
 `aiDraftReleaseNotes` options include **`AiDraftReleaseNotesOptions`**: `priorTag`, `postSummaryAsReleaseDescription`, `releaseRef` (if GitLab must create the tag when creating the release), and `releaseName`. Posting the description requires a PAT with the **`api`** scope.
 
+`aiListReleasesOverview` accepts **`AiListReleasesOverviewOptions`**: optional **`postSummaryToWikiSlug`** (e.g. `release-cadence-overview`), plus **`wikiPageTitle`** and **`wikiFormat`** for `upsertWikiPage`.
+
 ```ts
 import { aiDraftReleaseNotes, aiListReleasesOverview } from "@mcarvin/gitlab-llm-kit";
 
@@ -559,7 +580,10 @@ const draft = await aiDraftReleaseNotes(client, llm, PROJECT, "v1.1.0", {
   // releaseRef: "main",
 });
 
-const overview = await aiListReleasesOverview(client, llm, PROJECT);
+const overview = await aiListReleasesOverview(client, llm, PROJECT, {
+  // postSummaryToWikiSlug: "release-cadence-overview",
+  // wikiPageTitle: "Release cadence",
+});
 ```
 
 ---
@@ -580,6 +604,8 @@ const audit = await aiAuditEventsDashboardSummary(client, llm, PROJECT);
 
 ## Insight functions — wiki & snippets
 
+`aiWikiRunbookTldr`, `aiWikiOutdatedDocHints`, and `aiSuggestMergeWikiPages` share optional **`postSummaryToWikiSlug`**, **`wikiPageTitle`**, and **`wikiFormat`** (see **`AiWikiInsightOptions`**). Posting uses **`upsertWikiPage`** and requires a PAT with the **`api`** scope. For runbook TL;DR, choose a **target** slug (e.g. `runbooks/deploy-tldr`) so you do not overwrite the full source page unless intended.
+
 ```ts
 import {
   aiWikiRunbookTldr,
@@ -590,15 +616,20 @@ import {
 
 const tldr = await aiWikiRunbookTldr(client, llm, PROJECT, "runbooks/deploy", {
   wikiVersion: undefined,
+  // postSummaryToWikiSlug: "runbooks/deploy-tldr",
+  // wikiPageTitle: "Deploy runbook — TL;DR",
 });
 
 const hints = await aiWikiOutdatedDocHints(client, llm, PROJECT, {
   sampleSlugs: ["home", "runbooks/deploy"],
+  // postSummaryToWikiSlug: "internal/wiki-health-report",
 });
 
 const snip = await aiSnippetTldr(client, llm, 12345);
 
-const merge = await aiSuggestMergeWikiPages(client, llm, PROJECT);
+const merge = await aiSuggestMergeWikiPages(client, llm, PROJECT, {
+  // postSummaryToWikiSlug: "wiki-merge-suggestions",
+});
 ```
 
 ---
@@ -731,8 +762,15 @@ Import types alongside values when you need them:
 ```ts
 import type {
   AiDraftReleaseNotesOptions,
+  AiListReleasesOverviewOptions,
+  AiWikiInsightOptions,
+  AiWikiRunbookTldrOptions,
+  AiWikiOutdatedDocHintsOptions,
   AiIssueInsightOptions,
   AiMergeRequestInsightOptions,
+  CreateWikiPageParams,
+  UpdateWikiPageParams,
+  UpsertWikiPageParams,
   MergeRequest,
   Issue,
   GitlabClientOptions,

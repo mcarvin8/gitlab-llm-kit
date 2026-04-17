@@ -40,10 +40,13 @@ import {
 } from "@src/gitlab/search.js";
 import { listVulnerabilityFindings } from "@src/gitlab/security.js";
 import {
+  createWikiPage,
   getSnippet,
   getWikiPage,
   listProjectSnippets,
   listWikiPages,
+  updateWikiPage,
+  upsertWikiPage,
 } from "@src/gitlab/wikiAndSnippets.js";
 
 function mockClient(): GitlabClient & {
@@ -337,6 +340,125 @@ describe("gitlab API wrappers", () => {
     c.request.mockResolvedValue({ id: 1, title: "s" });
     await getSnippet(c, 99);
     expect(c.request).toHaveBeenCalledWith("GET", "/snippets/99");
+  });
+
+  it("createWikiPage", async () => {
+    const c = mockClient();
+    c.request.mockResolvedValue({ slug: "a-b", title: "A B", content: "x" });
+    const p = await createWikiPage(c, "p", {
+      title: "A B",
+      content: "# hi",
+      format: "markdown",
+    });
+    expect(c.request).toHaveBeenCalledWith("POST", "/projects/p/wikis", {
+      body: { title: "A B", content: "# hi", format: "markdown" },
+    });
+    expect(p.slug).toBe("a-b");
+  });
+
+  it("createWikiPage omits format when not set", async () => {
+    const c = mockClient();
+    c.request.mockResolvedValue({ slug: "n", title: "N" });
+    await createWikiPage(c, "p", { title: "N", content: "x" });
+    expect(c.request).toHaveBeenCalledWith("POST", "/projects/p/wikis", {
+      body: { title: "N", content: "x" },
+    });
+  });
+
+  it("updateWikiPage", async () => {
+    const c = mockClient();
+    c.request.mockResolvedValue({ slug: "rel", title: "Rel" });
+    await updateWikiPage(c, "p", "release-overview", {
+      content: "new body",
+      title: "Overview",
+      format: "markdown",
+    });
+    expect(c.request).toHaveBeenCalledWith(
+      "PUT",
+      "/projects/p/wikis/release-overview",
+      { body: { content: "new body", title: "Overview", format: "markdown" } },
+    );
+  });
+
+  it("updateWikiPage can send format without content", async () => {
+    const c = mockClient();
+    c.request.mockResolvedValue({ slug: "z" });
+    await updateWikiPage(c, "p", "z", { format: "markdown" });
+    expect(c.request).toHaveBeenCalledWith("PUT", "/projects/p/wikis/z", {
+      body: { format: "markdown" },
+    });
+  });
+
+  it("upsertWikiPage updates when page exists", async () => {
+    const c = mockClient();
+    c.request
+      .mockResolvedValueOnce({ slug: "cadence", title: "Cadence", content: "old" })
+      .mockResolvedValueOnce({ slug: "cadence", title: "Cadence", content: "new" });
+    const p = await upsertWikiPage(c, "p", "cadence", { content: "new" });
+    expect(c.request).toHaveBeenNthCalledWith(1, "GET", "/projects/p/wikis/cadence", {
+      query: undefined,
+    });
+    expect(c.request).toHaveBeenNthCalledWith(2, "PUT", "/projects/p/wikis/cadence", {
+      body: { content: "new" },
+    });
+    expect(p.content).toBe("new");
+  });
+
+  it("upsertWikiPage PUT passes title and format when provided", async () => {
+    const c = mockClient();
+    c.request
+      .mockResolvedValueOnce({ slug: "x", title: "X" })
+      .mockResolvedValueOnce({ slug: "x" });
+    await upsertWikiPage(c, "p", "x", {
+      content: "c",
+      title: "Renamed",
+      format: "markdown",
+    });
+    expect(c.request).toHaveBeenNthCalledWith(2, "PUT", "/projects/p/wikis/x", {
+      body: { content: "c", title: "Renamed", format: "markdown" },
+    });
+  });
+
+  it("upsertWikiPage creates when GET returns 404", async () => {
+    const c = mockClient();
+    c.request
+      .mockRejectedValueOnce(
+        new GitlabHttpError("missing", { status: 404, body: "{}" }),
+      )
+      .mockResolvedValueOnce({ slug: "cadence", title: "cadence", content: "x" });
+    await upsertWikiPage(c, "p", "cadence", { content: "x", title: "Release cadence" });
+    expect(c.request).toHaveBeenNthCalledWith(2, "POST", "/projects/p/wikis", {
+      body: {
+        title: "Release cadence",
+        content: "x",
+      },
+    });
+  });
+
+  it("upsertWikiPage POST includes format when provided", async () => {
+    const c = mockClient();
+    c.request
+      .mockRejectedValueOnce(
+        new GitlabHttpError("missing", { status: 404, body: "{}" }),
+      )
+      .mockResolvedValueOnce({ slug: "w" });
+    await upsertWikiPage(c, "p", "w", {
+      content: "c",
+      format: "markdown",
+    });
+    expect(c.request).toHaveBeenNthCalledWith(2, "POST", "/projects/p/wikis", {
+      body: { title: "w", content: "c", format: "markdown" },
+    });
+  });
+
+  it("upsertWikiPage rethrows non-404 from getWikiPage", async () => {
+    const c = mockClient();
+    c.request.mockRejectedValueOnce(
+      new GitlabHttpError("no", { status: 403, body: "{}" }),
+    );
+    await expect(upsertWikiPage(c, "p", "s", { content: "x" })).rejects.toMatchObject({
+      status: 403,
+    });
   });
 
   it("search", async () => {

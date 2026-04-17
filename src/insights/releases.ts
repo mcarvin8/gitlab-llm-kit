@@ -7,6 +7,7 @@ import {
   listCommits,
 } from "../gitlab/repository.js";
 import { getReleaseByTag, listReleases, upsertRelease } from "../gitlab/releases.js";
+import { upsertWikiPage } from "../gitlab/wikiAndSnippets.js";
 
 export type AiDraftReleaseNotesOptions = {
   model?: string;
@@ -73,11 +74,25 @@ export async function aiDraftReleaseNotes(
   return summary;
 }
 
+export type AiListReleasesOverviewOptions = {
+  model?: string;
+  maxPromptChars?: number;
+  /**
+   * When set, writes the generated overview to this wiki page slug (create or update via `upsertWikiPage`).
+   * Requires token with API write access.
+   */
+  postSummaryToWikiSlug?: string;
+  /** Page title when creating a new wiki page; defaults to `postSummaryToWikiSlug` if omitted. */
+  wikiPageTitle?: string;
+  /** Wiki format (e.g. `markdown`); passed through to `upsertWikiPage`. */
+  wikiFormat?: string;
+};
+
 export async function aiListReleasesOverview(
   client: GitlabClient,
   llm: LabflowLlm,
   projectId: string | number,
-  options?: { model?: string; maxPromptChars?: number },
+  options?: AiListReleasesOverviewOptions,
 ): Promise<string> {
   const list = await listReleases(client, projectId);
   const brief = list
@@ -87,9 +102,19 @@ export async function aiListReleasesOverview(
 
   const user = truncateForPrompt(brief, options?.maxPromptChars ?? 40_000);
 
-  return llm({
+  const summary = await llm({
     model: options?.model,
     system: `${POLICY_DEFAULT}\nSummarize release cadence and naming patterns briefly. Markdown.`,
     user,
   });
+
+  if (options?.postSummaryToWikiSlug) {
+    await upsertWikiPage(client, projectId, options.postSummaryToWikiSlug, {
+      content: summary,
+      title: options.wikiPageTitle,
+      format: options.wikiFormat,
+    });
+  }
+
+  return summary;
 }

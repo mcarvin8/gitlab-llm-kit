@@ -59,6 +59,12 @@ export { listVulnerabilityFindings } from "./gitlab/security.js";
 export {
   listWikiPages,
   getWikiPage,
+  createWikiPage,
+  updateWikiPage,
+  upsertWikiPage,
+  type CreateWikiPageParams,
+  type UpdateWikiPageParams,
+  type UpsertWikiPageParams,
   listProjectSnippets,
   getSnippet,
 } from "./gitlab/wikiAndSnippets.js";
@@ -118,6 +124,7 @@ export {
   aiDraftReleaseNotes,
   aiListReleasesOverview,
   type AiDraftReleaseNotesOptions,
+  type AiListReleasesOverviewOptions,
 } from "./insights/releases.js";
 
 export {
@@ -130,6 +137,9 @@ export {
   aiWikiOutdatedDocHints,
   aiSnippetTldr,
   aiSuggestMergeWikiPages,
+  type AiWikiInsightOptions,
+  type AiWikiRunbookTldrOptions,
+  type AiWikiOutdatedDocHintsOptions,
 } from "./insights/wiki.js";
 
 export { aiSearchMentionBundle } from "./insights/searchBundle.js";
