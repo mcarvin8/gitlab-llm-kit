@@ -1,0 +1,35 @@
+src/index.ts
+  2574b1eadd23af3f 62-67,127,140-142
+src/gitlab/wikiAndSnippets.ts
+  2574b1eadd23af3f 2,27-120
+src/insights/releases.ts
+  2574b1eadd23af3f 10,77-90,95,105,110-119
+README.md
+  2574b1eadd23af3f 61,138,149,151-153,171,217,220-221,223
+HANDBOOK.md
+  2574b1eadd23af3f 3,248-250,257-272,572-573,583-586,607-608,619-620,625,630-632,765-768,771-773
+test/gitlabApi.spec.ts
+  2574b1eadd23af3f 43,48-49,345-463
+src/insights/wiki.ts
+  2574b1eadd23af3f 9,12-46,52,57,62-71,74-77,83,100,105-114,140,148,153-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "4872410bbdb50a5318650fff61f1c743590a9886",
+  "prompts": {
+    "2574b1eadd23af3f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "eeab1674-1b3b-489d-8bbd-633ffdb28793",
+        "model": "composer-2-fast"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 384,
+      "total_deletions": 22,
+      "accepted_lines": 382,
+      "overriden_lines": 0
+    }
+  }
+}
