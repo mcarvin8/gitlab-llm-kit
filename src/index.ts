@@ -1,4 +1,9 @@
-/** GitLab REST helpers + LLM insights. Smart diffing uses `@mcarvin/smart-diff` (any git repo or GitLab-supplied patches). */
+/**
+ * GitLab REST helpers + LLM insights powered by the Vercel AI SDK.
+ * Smart diffing uses `@mcarvin/smart-diff` (any git repo or GitLab-supplied patches),
+ * and the LLM layer supports OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere,
+ * Groq, xAI, DeepSeek, or any OpenAI-compatible gateway.
+ */
 
 export { GitlabClient, type GitlabClientOptions } from "./gitlab/client.js";
 export { GitlabHttpError } from "./gitlab/errors.js";
@@ -84,7 +89,11 @@ export { listProjectEvents, listGroupEvents } from "./gitlab/events.js";
 export { listProjectAuditEvents } from "./gitlab/audit.js";
 export { getProject, getReadmeFile } from "./gitlab/projectMeta.js";
 
-export type { LabflowLlm } from "./ai/types.js";
+export type {
+  LabflowLlm,
+  LabflowLanguageModelProvider,
+  LlmProviderId,
+} from "./ai/types.js";
 export {
   POLICY_DEFAULT,
   POLICY_HUMAN_REVIEW,
@@ -177,14 +186,21 @@ export {
   getDiff,
   getDiffSummary,
   getCommits,
+  getChangedFiles,
+  filterCommitsByMessageRegexes,
+  buildDiffPathspecs,
   createGitClient,
   getRepoRoot,
   truncateUnifiedDiffForLlm,
   resolveLlmMaxDiffChars,
   DEFAULT_GIT_DIFF_SYSTEM_PROMPT,
-  createOpenAiLikeClient,
-  resolveOpenAiLikeClientInit,
-  shouldUseLlmGateway,
+  LLM_GATEWAY_REQUIRED_MESSAGE,
+  resolveLanguageModel,
+  detectLlmProvider,
+  isLlmProviderConfigured,
+  defaultModelForProvider,
+  resolveLlmBaseUrl,
+  parseLlmDefaultHeadersFromEnv,
 } from "@mcarvin/smart-diff";
 
 export type {
@@ -193,6 +209,6 @@ export type {
   DiffSummary,
   GenerateSummaryInput,
   SummarizeFlags,
-  OpenAiLikeClient,
-  OpenAiLikeClientInit,
+  LlmModelProvider,
+  ResolveLanguageModelOptions,
 } from "@mcarvin/smart-diff";

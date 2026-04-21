@@ -5,7 +5,7 @@
 [![Downloads/week](https://img.shields.io/npm/dw/@mcarvin/gitlab-llm-kit.svg)](https://npmjs.org/package/@mcarvin/gitlab-llm-kit)
 [![codecov](https://codecov.io/gh/mcarvin8/gitlab-llm-kit/graph/badge.svg?token=9GMSXV4DPQ)](https://codecov.io/gh/mcarvin8/gitlab-llm-kit)
 
-TypeScript library for **AI-assisted workflows on top of the GitLab REST API**. It fetches merge requests, issues, diffs, wikis, releases, and other resources using ordinary **personal or project access tokens**, then generates summaries and review aids through an **OpenAI-compatible Chat Completions API**.
+TypeScript library for **AI-assisted workflows on top of the GitLab REST API**. It fetches merge requests, issues, diffs, wikis, releases, and other resources using ordinary **personal or project access tokens**, then generates summaries and review aids through any LLM provider supported by the [Vercel AI SDK](https://sdk.vercel.ai) — **OpenAI, Anthropic, Google Gemini, Amazon Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, or any OpenAI-compatible gateway**.
 
 > **Examples handbook:** runnable snippets for every public export are in **[HANDBOOK.md](https://github.com/mcarvin8/gitlab-llm-kit/blob/main/HANDBOOK.md)**.
 
@@ -16,14 +16,14 @@ TypeScript library for **AI-assisted workflows on top of the GitLab REST API**. 
 **This package does not use Duo and does not call GitLab’s AI APIs.** It only uses:
 
 - The **standard GitLab REST API** (`/api/v4/…`) that ships with GitLab CE/EE and self-managed instances.
-- **Your own** OpenAI-compatible endpoint—often already provided by your company (private gateway, Azure OpenAI-compatible proxy, etc.).
+- **Your own** LLM — any provider supported by the Vercel AI SDK (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek) or an OpenAI-compatible gateway (company proxy, Azure OpenAI-compatible proxy, etc.).
 
-So teams on **self-managed GitLab** without Duo can still get MR/issue summaries, reviewer briefings, and diff narratives **as long as they can reach GitLab’s API with a token and can reach their company’s LLM.** You pay for whatever your org already pays for models and hosting, not for Duo.
+So teams on **self-managed GitLab** without Duo can still get MR/issue summaries, reviewer briefings, and diff narratives **as long as they can reach GitLab’s API with a token and can reach their chosen LLM.** You pay for whatever your org already pays for models and hosting, not for Duo.
 
 | | GitLab Duo | `@mcarvin/gitlab-llm-kit` |
 |---|------------|---------------------------|
 | GitLab side | Duo features inside GitLab UI | Standard REST API + tokens only |
-| AI side | GitLab-managed | **Bring your own** OpenAI-compatible API |
+| AI side | GitLab-managed | **Bring your own** — any Vercel AI SDK provider or OpenAI-compatible endpoint |
 | Self-managed GitLab | Duo availability depends on license | Works with any GitLab that exposes `/api/v4` |
 
 ---
@@ -32,8 +32,9 @@ So teams on **self-managed GitLab** without Duo can still get MR/issue summaries
 
 - **Node.js** 20+
 - Network access to **your GitLab** (`https://your.gitlab.example.com/api/v4` or GitLab.com)
-- Network access to **your OpenAI-compatible** service (`OPENAI_BASE_URL` / company gateway)
+- Network access to **your LLM** (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, or an OpenAI-compatible gateway)
 - A **GitLab token** with scopes appropriate to what you call (e.g. `read_api`, `read_repository` for MR diffs—follow your admin’s least-privilege guidance). **Posting merge request notes** (optional on some helpers) requires a token with the **`api`** scope so GitLab accepts `POST` to the notes API.
+- An **LLM provider credential** (see [LLM configuration](#openai--bring-your-own-llm-gateway)). `@ai-sdk/openai` and `@ai-sdk/openai-compatible` ship as direct dependencies via `@mcarvin/smart-diff`. Every other provider (`@ai-sdk/anthropic`, `@ai-sdk/google`, `@ai-sdk/amazon-bedrock`, `@ai-sdk/mistral`, `@ai-sdk/cohere`, `@ai-sdk/groq`, `@ai-sdk/xai`, `@ai-sdk/deepseek`) is declared as an **optional peer** and only needs to be installed when you actually use that provider.
 - **`@mcarvin/smart-diff` and Git:** Helpers that summarize a **GitLab merge request** (`summarizeMergeRequestDiffWithSmartDiff`, etc.) only use the GitLab REST API plus the LLM—**no local Git install** is required. Helpers that summarize a **local clone** (`summarizeGitDiff`, `generateSummary` with patches from disk, etc.) need the **`git` CLI on your `PATH`**. On Windows, install [Git for Windows](https://git-scm.com/download/win) (or another distribution) and ensure `git` is available to the same environment as Node—often **Git Bash** or **PowerShell** after choosing “Git from the command line” during setup. CI images usually include `git`; add it explicitly if your runner image is minimal.
 
 ---
@@ -67,25 +68,69 @@ $env:GITLAB_TOKEN = "glpat-xxxxxxxx"
 $env:GITLAB_BASE_URL = "https://gitlab.internal.example.com/api/v4"
 ```
 
-### OpenAI / company LLM gateway
+### LLM — bring your own (OpenAI, Anthropic, Google, Bedrock, …)
 
-Insight functions use **`createLabflowLlm()`**, which reads the official OpenAI client env vars. The **`@mcarvin/smart-diff`** integration (`summarizeMergeRequestDiffWithSmartDiff`, `summarizeGitDiff`, etc.) understands the same **`LLM_*`** variables as that package, so you can align with a corporate gateway.
+Both `createLabflowLlm()` and the `@mcarvin/smart-diff` integration share the **same provider resolver**: they look at the standard `LLM_*` / provider-specific env vars and build a [Vercel AI SDK](https://sdk.vercel.ai) `LanguageModel`. You can pick a provider explicitly with `LLM_PROVIDER` or let auto-detection choose based on which credentials are set.
+
+#### Selecting a provider
+
+`LLM_PROVIDER` explicitly selects a provider. When unset, the resolver auto-detects in this order: `LLM_BASE_URL`/`OPENAI_BASE_URL` → `openai-compatible`, `OPENAI_API_KEY`/`LLM_API_KEY` → `openai`, then `ANTHROPIC_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY` (or `GOOGLE_API_KEY`), `MISTRAL_API_KEY`, `COHERE_API_KEY`, `GROQ_API_KEY`, `XAI_API_KEY`, `DEEPSEEK_API_KEY`, and finally `OPENAI_DEFAULT_HEADERS`/`LLM_DEFAULT_HEADERS` → `openai`.
+
+| Provider (`LLM_PROVIDER`) | Package | Credential env vars | Default model |
+|---|---|---|---|
+| `openai` | `@ai-sdk/openai` | `OPENAI_API_KEY` or `LLM_API_KEY` | `gpt-4o-mini` |
+| `openai-compatible` | `@ai-sdk/openai-compatible` | `LLM_BASE_URL` or `OPENAI_BASE_URL` (required); `OPENAI_API_KEY`/`LLM_API_KEY` or custom headers | `gpt-4o-mini` |
+| `anthropic` | `@ai-sdk/anthropic` | `ANTHROPIC_API_KEY` | `claude-3-5-haiku-latest` |
+| `google` | `@ai-sdk/google` | `GOOGLE_GENERATIVE_AI_API_KEY` or `GOOGLE_API_KEY` | `gemini-2.0-flash` |
+| `bedrock` | `@ai-sdk/amazon-bedrock` | Standard AWS credential chain (env / profile / role) | `anthropic.claude-3-5-haiku-20241022-v1:0` |
+| `mistral` | `@ai-sdk/mistral` | `MISTRAL_API_KEY` | `mistral-small-latest` |
+| `cohere` | `@ai-sdk/cohere` | `COHERE_API_KEY` | `command-r-08-2024` |
+| `groq` | `@ai-sdk/groq` | `GROQ_API_KEY` | `llama-3.1-8b-instant` |
+| `xai` | `@ai-sdk/xai` | `XAI_API_KEY` | `grok-2-latest` |
+| `deepseek` | `@ai-sdk/deepseek` | `DEEPSEEK_API_KEY` | `deepseek-chat` |
+
+> `LLM_*` wins over `OPENAI_*` where both exist.
+
+#### Common env vars
 
 | Variable | Purpose |
 |----------|---------|
-| `OPENAI_API_KEY` | API key for the default `createLabflowLlm()` path (optional if you authenticate only via `defaultHeaders` / `OPENAI_DEFAULT_HEADERS`) |
-| `OPENAI_BASE_URL` | Base URL for an OpenAI-compatible API (many gateways use this) |
-| `OPENAI_MODEL` | Default model id for `createLabflowLlm` (optional; library default applies if unset) |
-| `LLM_API_KEY` / `LLM_BASE_URL` | Used by `@mcarvin/smart-diff`’s client (`LLM_*` overrides where both exist in that package) |
-| `OPENAI_DEFAULT_HEADERS` / `LLM_DEFAULT_HEADERS` | JSON object of extra headers for gateways that need RBAC or custom auth. **`createLabflowLlm()`** merges these into the OpenAI client (same idea as `@mcarvin/smart-diff`); override or add headers with **`createLabflowLlm({ defaultHeaders: { … } })`** (options win on key conflicts). |
-| `LLM_MAX_DIFF_CHARS` | Caps unified diff size sent to the model for diff summarization |
+| `LLM_PROVIDER` | Explicit provider id from the table above. |
+| `LLM_MODEL` | Overrides the per-provider default model id (applies to `createLabflowLlm()` and smart-diff). |
+| `OPENAI_MODEL` | Fallback default for `createLabflowLlm()` when `LLM_MODEL` is unset. |
+| `OPENAI_BASE_URL` / `LLM_BASE_URL` | Base URL for an OpenAI-compatible gateway; presence alone auto-selects the `openai-compatible` provider. |
+| `OPENAI_DEFAULT_HEADERS` / `LLM_DEFAULT_HEADERS` | JSON object of extra headers merged onto OpenAI / OpenAI-compatible requests (e.g. RBAC tokens, raw `Authorization`). `LLM_*` overrides `OPENAI_*` key-by-key. |
+| `LLM_PROVIDER_NAME` | Display name used when `openai-compatible` is active (defaults to `openai-compatible`). |
+| `OPENAI_MAX_DIFF_CHARS` / `LLM_MAX_DIFF_CHARS` | Max size of unified diff text sent to the model (default ~120k characters). |
+| `OPENAI_MAX_TOKENS` / `LLM_MAX_TOKENS` | Max completion tokens (default 4000). |
 
-Example aligned with a company gateway:
+#### Example: native OpenAI
+
+```powershell
+$env:OPENAI_API_KEY = "sk-..."
+# Optional: $env:LLM_MODEL = "gpt-4o"
+```
+
+#### Example: Anthropic Claude
+
+```powershell
+$env:ANTHROPIC_API_KEY = "sk-ant-..."
+$env:LLM_MODEL = "claude-3-5-sonnet-latest"   # optional override
+```
+
+#### Example: company-managed OpenAI-compatible gateway
 
 ```powershell
 $env:OPENAI_BASE_URL = "https://llm-gateway.company.com/v1"
-$env:OPENAI_API_KEY = "your-key-or-token-accepted-by-gateway"
-# If your gateway requires extra headers, also set LLM_DEFAULT_HEADERS as in @mcarvin/smart-diff README.
+$env:OPENAI_DEFAULT_HEADERS = '{"x-company-rbac":"your-rbac-token-here","Authorization":"Bearer sk-your-api-key-here"}'
+# LLM_PROVIDER is auto-detected as "openai-compatible" because LLM_BASE_URL/OPENAI_BASE_URL is set.
+```
+
+#### Example: Google Gemini
+
+```powershell
+$env:GOOGLE_GENERATIVE_AI_API_KEY = "..."
+$env:LLM_MODEL = "gemini-2.0-flash"
 ```
 
 ---
@@ -184,9 +229,10 @@ Utilities: `encodeProjectId`, `encodeGroupId`, `encodeQuery`, `GitlabHttpError`,
 
 | Export | Purpose |
 |--------|---------|
-| `createLabflowLlm` | Build a `LabflowLlm` using the OpenAI SDK (`OPENAI_*` env). |
+| `createLabflowLlm` | Build a `LabflowLlm` backed by the Vercel AI SDK. Honors `LLM_PROVIDER` / provider auto-detection (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, OpenAI-compatible). Override per call with `provider` / `defaultModel`, or bypass env with `languageModelProvider`. |
 | `truncateForPrompt` | Trim long text for prompts. |
 | `POLICY_*` | Optional strings for system prompts (secrets, security, human review). |
+| `LlmProviderId` | Union type of supported provider ids (re-exported from smart-diff). |
 
 ### Smart diff bridge (GitLab → `@mcarvin/smart-diff`)
 
@@ -234,9 +280,22 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 
 ### Re-exports from `@mcarvin/smart-diff`
 
-For local git and advanced pipelines: `summarizeGitDiff`, `generateSummary`, `getDiff`, `getDiffSummary`, `getCommits`, `createGitClient`, `getRepoRoot`, `truncateUnifiedDiffForLlm`, `resolveLlmMaxDiffChars`, `DEFAULT_GIT_DIFF_SYSTEM_PROMPT`, `createOpenAiLikeClient`, `resolveOpenAiLikeClientInit`, `shouldUseLlmGateway`, plus related **types**.
+For local git and advanced pipelines: `summarizeGitDiff`, `generateSummary`, `getDiff`, `getDiffSummary`, `getCommits`, `getChangedFiles`, `filterCommitsByMessageRegexes`, `buildDiffPathspecs`, `createGitClient`, `getRepoRoot`, `truncateUnifiedDiffForLlm`, `resolveLlmMaxDiffChars`, `DEFAULT_GIT_DIFF_SYSTEM_PROMPT`, `LLM_GATEWAY_REQUIRED_MESSAGE`, `resolveLanguageModel`, `detectLlmProvider`, `isLlmProviderConfigured`, `defaultModelForProvider`, `resolveLlmBaseUrl`, `parseLlmDefaultHeadersFromEnv`, plus related **types** (`LlmModelProvider`, `ResolveLanguageModelOptions`, `LlmProviderId`, `SummarizeFlags`, `GenerateSummaryInput`, `CommitInfo`, `DiffSummary`, `GitDiffAiSummaryOptions`).
 
 The authoritative list of exports is **`src/index.ts`**.
+
+---
+
+## Migrating from 1.x → 2.x
+
+v2 swaps the direct `openai` SDK dependency for the Vercel AI SDK via `@mcarvin/smart-diff` v2. If you only rely on env-var configuration, your setup keeps working — `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_DEFAULT_HEADERS`, `LLM_*` equivalents, `OPENAI_MAX_DIFF_CHARS`, and `OPENAI_MAX_TOKENS` are all still honored.
+
+Breaking changes:
+
+- **`createLabflowLlm` no longer takes `apiKey` / `baseURL` / `defaultHeaders`.** Configure the provider with env vars (`LLM_PROVIDER`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `LLM_BASE_URL`/`OPENAI_BASE_URL`, `OPENAI_DEFAULT_HEADERS`, …) the same way `@mcarvin/smart-diff` does. The option bag now accepts `provider`, `defaultModel`, `maxUserChars`, and `languageModelProvider` (factory returning a Vercel AI SDK `LanguageModel`).
+- **`summarizeMergeRequestDiffWithSmartDiff` / `summarizeCompareDiffWithSmartDiff` removed `openAiClientProvider`.** Use `llmModelProvider: () => Promise<LanguageModel>` instead, or set `LLM_PROVIDER` and the relevant provider env var. They now also accept an explicit `provider` id.
+- **Removed re-exports** from smart-diff: `createOpenAiLikeClient`, `resolveOpenAiLikeClientInit`, `shouldUseLlmGateway`, `OpenAiLikeClient`, `OpenAiLikeClientInit`. Use `resolveLanguageModel`, `detectLlmProvider`, `isLlmProviderConfigured`, and `LLM_GATEWAY_REQUIRED_MESSAGE` instead (all re-exported from `@mcarvin/gitlab-llm-kit`).
+- **`openai` npm package is no longer a dependency.** Remove it from your own `package.json` if you only depended on it transitively via this toolkit.
 
 ---
 

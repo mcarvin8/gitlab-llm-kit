@@ -61,9 +61,22 @@ Typical variables (see README for full tables):
 ```bash
 export GITLAB_TOKEN="glpat-..."
 export GITLAB_BASE_URL="https://gitlab.example.com/api/v4"
-export OPENAI_API_KEY="..."
-export OPENAI_BASE_URL="..."   # optional company gateway
-export OPENAI_MODEL="gpt-4o-mini"
+
+# Pick one LLM provider:
+export OPENAI_API_KEY="..."                     # or LLM_API_KEY
+# export ANTHROPIC_API_KEY="..."
+# export GOOGLE_GENERATIVE_AI_API_KEY="..."
+# export MISTRAL_API_KEY="..."
+# export COHERE_API_KEY="..."
+# export GROQ_API_KEY="..."
+# export XAI_API_KEY="..."
+# export DEEPSEEK_API_KEY="..."
+# Amazon Bedrock uses the standard AWS credential chain.
+
+# Optional cross-provider overrides:
+export LLM_PROVIDER="openai"           # explicit; otherwise auto-detected from creds
+export LLM_MODEL="gpt-4o-mini"         # overrides provider default
+export OPENAI_BASE_URL="..."           # optional OpenAI-compatible gateway
 ```
 
 ---
@@ -80,9 +93,10 @@ const client = new GitlabClient({
 });
 
 const llm = createLabflowLlm({
-  // apiKey: process.env.OPENAI_API_KEY,
-  // baseURL: process.env.OPENAI_BASE_URL,
-  // defaultModel: "gpt-4o-mini",
+  // provider: "anthropic",            // explicit provider; otherwise auto-detected
+  // defaultModel: "gpt-4o-mini",      // overrides LLM_MODEL / per-provider default
+  // maxUserChars: 120_000,
+  // languageModelProvider: async () => myCustomLanguageModel, // bypass env resolution
 });
 
 const PROJECT = "namespace/project"; // or numeric project id
@@ -382,11 +396,19 @@ import {
   truncateForPrompt,
 } from "@mcarvin/gitlab-llm-kit";
 
+// Default: provider + model auto-detected from env (same resolver as smart-diff v2).
 const llm = createLabflowLlm();
-// Gateway headers only (no OPENAI_API_KEY): set OPENAI_DEFAULT_HEADERS / LLM_DEFAULT_HEADERS as JSON, or:
-// createLabflowLlm({ defaultHeaders: { Authorization: "Bearer ..." } });
-// Gateway headers (same env as README: OPENAI_DEFAULT_HEADERS / LLM_DEFAULT_HEADERS as JSON), or explicitly:
-// createLabflowLlm({ apiKey: "...", defaultHeaders: { "X-Org-Id": "..." } });
+
+// Pin a provider explicitly — useful when multiple credentials are set:
+// const llm = createLabflowLlm({ provider: "anthropic", defaultModel: "claude-3-5-sonnet-latest" });
+
+// Bring your own LanguageModel (tests, middlewares, custom retries):
+// import { createAnthropic } from "@ai-sdk/anthropic";
+// const llm = createLabflowLlm({
+//   languageModelProvider: async () =>
+//     createAnthropic({ apiKey: process.env.MY_ANTHROPIC_KEY! })("claude-3-5-sonnet-latest"),
+// });
+
 const short = truncateForPrompt(longText, 50_000);
 void POLICY_DEFAULT;
 void POLICY_NO_SECRET_EXFILTRATION;
@@ -405,7 +427,7 @@ const out = await llm({
 
 ## Smart diff bridge (GitLab → `@mcarvin/smart-diff`)
 
-Uses **`@mcarvin/smart-diff`** env (`OPENAI_API_KEY` / `LLM_*`, etc.), not only `createLabflowLlm`.
+Uses the same env as **`@mcarvin/smart-diff`** v2 (`LLM_PROVIDER`, `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY` / …, `LLM_MODEL`, `LLM_BASE_URL`, …).
 
 ### `summarizeMergeRequestDiffWithSmartDiff`
 
@@ -420,9 +442,10 @@ const markdown = await summarizeMergeRequestDiffWithSmartDiff({
   mergeRequestIid: 42,
   teamName: "Platform",
   // postSummaryAsMergeRequestNote: true,  // optional; needs PAT with `api` scope
-  // model: "gpt-4o",
+  // provider: "anthropic",                // pin an LLM provider id
+  // model: "claude-3-5-sonnet-latest",
   // maxDiffChars: 80_000,
-  // openAiClientProvider: async () => createOpenAiLikeClient(),
+  // llmModelProvider: async () => myLanguageModel, // bypass env resolution
 });
 console.log(markdown);
 ```
@@ -759,7 +782,7 @@ const text = await aiProjectReadmeConsistency(client, llm, PROJECT, {
 
 ## Re-exports from `@mcarvin/smart-diff` (local git)
 
-These work **without** GitLab; they use a **local clone** on disk. Configure the same env as `smart-diff` (`OPENAI_API_KEY` / `LLM_*`, etc.).
+These work **without** GitLab; they use a **local clone** on disk. Configure the same env as `@mcarvin/smart-diff` v2 (`LLM_PROVIDER`, `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY` / …, `LLM_MODEL`, `LLM_BASE_URL`, …).
 
 ### `summarizeGitDiff`
 
@@ -794,18 +817,30 @@ const root = await getRepoRoot(git);
 const commits = await getCommits(git, "main", "HEAD");
 ```
 
-### `createOpenAiLikeClient`, `resolveOpenAiLikeClientInit`, `shouldUseLlmGateway`
+### Provider resolution helpers
 
 ```ts
 import {
-  createOpenAiLikeClient,
-  resolveOpenAiLikeClientInit,
-  shouldUseLlmGateway,
+  resolveLanguageModel,
+  detectLlmProvider,
+  isLlmProviderConfigured,
+  defaultModelForProvider,
+  resolveLlmBaseUrl,
+  parseLlmDefaultHeadersFromEnv,
+  LLM_GATEWAY_REQUIRED_MESSAGE,
 } from "@mcarvin/gitlab-llm-kit";
 
-void shouldUseLlmGateway();
-void resolveOpenAiLikeClientInit();
-const client = await createOpenAiLikeClient();
+if (!isLlmProviderConfigured()) {
+  throw new Error(LLM_GATEWAY_REQUIRED_MESSAGE);
+}
+
+void detectLlmProvider();              // e.g. "openai" | "anthropic" | ... | undefined
+void defaultModelForProvider("groq");   // "llama-3.1-8b-instant"
+void resolveLlmBaseUrl();               // LLM_BASE_URL / OPENAI_BASE_URL
+void parseLlmDefaultHeadersFromEnv();   // JSON headers from *_DEFAULT_HEADERS
+
+// Hand-wire a Vercel AI SDK LanguageModel:
+const model = await resolveLanguageModel({ provider: "anthropic", model: "claude-3-5-sonnet-latest" });
 ```
 
 ### `truncateUnifiedDiffForLlm`, `resolveLlmMaxDiffChars`, `DEFAULT_GIT_DIFF_SYSTEM_PROMPT`
@@ -844,6 +879,8 @@ import type {
   Issue,
   GitlabClientOptions,
   LabflowLlm,
+  LabflowLanguageModelProvider,
+  LlmProviderId,
   SummarizeGitLabMergeRequestDiffOptions,
   ReviewSinceOptions,
   UpsertReleaseParams,
@@ -853,8 +890,8 @@ import type {
   DiffSummary,
   GenerateSummaryInput,
   SummarizeFlags,
-  OpenAiLikeClient,
-  OpenAiLikeClientInit,
+  LlmModelProvider,
+  ResolveLanguageModelOptions,
 } from "@mcarvin/gitlab-llm-kit";
 ```
 
