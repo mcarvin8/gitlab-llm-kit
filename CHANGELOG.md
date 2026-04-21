@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.4.1...v2.0.0) (2026-04-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ai:** `createLabflowLlm` no longer accepts `apiKey` / `baseURL` / `defaultHeaders`; use env vars or the new `provider` / `defaultModel` / `languageModelProvider` options. `summarizeMergeRequestDiffWithSmartDiff` and `summarizeCompareDiffWithSmartDiff` replace `openAiClientProvider` with `llmModelProvider` (Vercel AI SDK `LanguageModel` factory) and add an explicit `provider` option. The `createOpenAiLikeClient`, `resolveOpenAiLikeClientInit`, `shouldUseLlmGateway`, `OpenAiLikeClient`, and `OpenAiLikeClientInit` re-exports are removed in favor of `resolveLanguageModel`, `isLlmProviderConfigured`, `detectLlmProvider`, `LLM_GATEWAY_REQUIRED_MESSAGE`, `LlmModelProvider`, `LlmProviderId`, and `ResolveLanguageModelOptions`. The `openai` npm package is no longer a dependency.
+
+### Features
+
+* **ai:** adopt Vercel AI SDK via smart-diff 2.0.0 for multi-provider LLMs ([#7](https://github.com/mcarvin8/gitlab-llm-kit/issues/7)) ([285f53b](https://github.com/mcarvin8/gitlab-llm-kit/commit/285f53bfb01615ef62ea8678284b00055459fbdb))
+
 ## [1.4.1](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.4.0...v1.4.1) (2026-04-17)
 
 
