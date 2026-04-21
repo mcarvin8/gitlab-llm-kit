@@ -1,8 +1,8 @@
 import {
-  createOpenAiLikeClient,
   generateSummary,
   type CommitInfo,
-  type OpenAiLikeClient,
+  type LlmModelProvider,
+  type LlmProviderId,
   truncateUnifiedDiffForLlm,
   resolveLlmMaxDiffChars,
 } from "@mcarvin/smart-diff";
@@ -23,12 +23,21 @@ export type SummarizeGitLabMergeRequestDiffOptions = {
   mergeRequestIid: number;
   /** Passed through to smart-diff (team line in prompt). */
   teamName?: string;
+  /**
+   * Explicit LLM provider id (OpenAI / Anthropic / Google / Bedrock / Mistral /
+   * Cohere / Groq / xAI / DeepSeek / openai-compatible). Wins over
+   * `LLM_PROVIDER` env + auto-detection.
+   */
+  provider?: LlmProviderId;
   model?: string;
   maxDiffChars?: number;
   /** Override default smart-diff system prompt. */
   systemPrompt?: string;
-  /** When set, uses this instead of `createOpenAiLikeClient()` from env. */
-  openAiClientProvider?: () => Promise<OpenAiLikeClient>;
+  /**
+   * Hand-wire a Vercel AI SDK `LanguageModel` factory — bypasses smart-diff's
+   * env-based provider resolution (useful in tests or for custom setups).
+   */
+  llmModelProvider?: LlmModelProvider;
   /** When true, POST the generated summary as a new merge request note (requires token with API write access). */
   postSummaryAsMergeRequestNote?: boolean;
 };
@@ -83,9 +92,6 @@ export async function summarizeMergeRequestDiffWithSmartDiff(
   const from = mr.target_branch ?? "target";
   const to = mr.source_branch ?? "source";
 
-  const provider =
-    options.openAiClientProvider ?? (() => createOpenAiLikeClient());
-
   const summary = await generateSummary({
     diffText,
     fileNames,
@@ -95,10 +101,11 @@ export async function summarizeMergeRequestDiffWithSmartDiff(
       to,
       team: options.teamName,
       model: options.model,
+      provider: options.provider,
       maxDiffChars: options.maxDiffChars,
       systemPrompt: options.systemPrompt,
     },
-    openAiClientProvider: provider,
+    llmModelProvider: options.llmModelProvider,
   });
 
   if (options.postSummaryAsMergeRequestNote) {
@@ -116,10 +123,11 @@ export type SummarizeCompareDiffOptions = {
   from: string;
   to: string;
   teamName?: string;
+  provider?: LlmProviderId;
   model?: string;
   maxDiffChars?: number;
   systemPrompt?: string;
-  openAiClientProvider?: () => Promise<OpenAiLikeClient>;
+  llmModelProvider?: LlmModelProvider;
 };
 
 /** Like {@link summarizeMergeRequestDiffWithSmartDiff}, but for `/repository/compare`. */
@@ -136,8 +144,6 @@ export async function summarizeCompareDiffWithSmartDiff(
 
   const max = resolveLlmMaxDiffChars(options.maxDiffChars);
   const diffText = truncateUnifiedDiffForLlm(rawDiff, max);
-  const provider =
-    options.openAiClientProvider ?? (() => createOpenAiLikeClient());
 
   return generateSummary({
     diffText,
@@ -148,9 +154,10 @@ export async function summarizeCompareDiffWithSmartDiff(
       to: options.to,
       team: options.teamName,
       model: options.model,
+      provider: options.provider,
       maxDiffChars: options.maxDiffChars,
       systemPrompt: options.systemPrompt,
     },
-    openAiClientProvider: provider,
+    llmModelProvider: options.llmModelProvider,
   });
 }

@@ -1,7 +1,7 @@
 {
   "name": "@mcarvin/gitlab-llm-kit",
   "version": "1.4.1",
-  "description": "TypeScript toolkit for GitLab REST API workflows with your own OpenAI-compatible LLM.",
+  "description": "TypeScript toolkit for GitLab REST API workflows using any LLM provider supported by the Vercel AI SDK (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, or any OpenAI-compatible gateway).",
   "author": "Matt Carvin",
   "license": "MIT",
   "main": "dist/index.cjs",
@@ -46,8 +46,10 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@mcarvin/smart-diff": "^1.1.0",
-    "openai": "^6.34.0",
+    "@ai-sdk/openai": "^3.0.53",
+    "@ai-sdk/openai-compatible": "^2.0.41",
+    "@mcarvin/smart-diff": "^2.0.0",
+    "ai": "^6.0.168",
     "tslib": "^2.6.2"
   },
   "repository": {
@@ -59,15 +61,37 @@
   },
   "keywords": [
     "gitlab",
+    "ai",
+    "ai-sdk",
+    "vercel-ai-sdk",
+    "llm",
     "openai",
+    "openai-compatible",
+    "anthropic",
+    "google",
+    "gemini",
+    "bedrock",
+    "mistral",
+    "cohere",
+    "groq",
+    "xai",
+    "deepseek",
     "merge-requests",
     "diff",
     "rest-api",
-    "llm",
-    "ai",
     "toolkit",
     "tools",
     "utils",
     "git"
-  ]
+  ],
+  "optionalDependencies": {
+    "@ai-sdk/amazon-bedrock": "^4.0.96",
+    "@ai-sdk/anthropic": "^3.0.71",
+    "@ai-sdk/cohere": "^3.0.30",
+    "@ai-sdk/deepseek": "^2.0.29",
+    "@ai-sdk/google": "^3.0.64",
+    "@ai-sdk/groq": "^3.0.35",
+    "@ai-sdk/mistral": "^3.0.30",
+    "@ai-sdk/xai": "^3.0.83"
+  }
 }
