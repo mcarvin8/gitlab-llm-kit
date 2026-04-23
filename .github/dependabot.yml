@@ -5,9 +5,8 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
-      prefix: "feat(openai)"
+      prefix: "feat(core)"
     allow:
-      - dependency-name: 'openai'
       - dependency-name: '@mcarvin/smart-diff'
   - package-ecosystem: 'github-actions'
     directory: '/'
