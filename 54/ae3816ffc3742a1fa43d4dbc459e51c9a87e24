@@ -1,0 +1,29 @@
+src/index.ts
+  1260c802bfc36c8f 192-194,213-216
+package.json
+  1260c802bfc36c8f 51
+src/integrations/smartDiffBridge.ts
+  1260c802bfc36c8f 4,9-10,23-28,52-76,79-145,147,181-183,190,192,233-240,248-249,256,258
+test/smartDiffBridge.spec.ts
+  1260c802bfc36c8f 1-52,55-61,65-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "54ae3816ffc3742a1fa43d4dbc459e51c9a87e24",
+  "prompts": {
+    "1260c802bfc36c8f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c0ece8ad-1e99-45dc-9d79-7c657e732f8a",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 309,
+      "total_deletions": 18,
+      "accepted_lines": 301,
+      "overriden_lines": 0
+    }
+  }
+}
