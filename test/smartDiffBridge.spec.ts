@@ -1,7 +1,11 @@
-const mockGenerateSummary = jest.fn();
-const mockShapeUnifiedDiff = jest.fn((text: string) => text);
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
-jest.mock("@mcarvin/smart-diff", () => {
+const { mockGenerateSummary, mockShapeUnifiedDiff } = vi.hoisted(() => ({
+  mockGenerateSummary: vi.fn(),
+  mockShapeUnifiedDiff: vi.fn((text: string) => text),
+}));
+
+vi.mock("@mcarvin/smart-diff", () => {
   const DEFAULT_NOISE_EXCLUDES = [
     "package-lock.json",
     "yarn.lock",
@@ -29,14 +33,14 @@ import {
 } from "@src/integrations/smartDiffBridge.js";
 
 type MockClient = GitlabClient & {
-  request: jest.Mock;
-  requestAllPages: jest.Mock;
+  request: Mock;
+  requestAllPages: Mock;
 };
 
 function mockClient(): MockClient {
   return {
-    request: jest.fn(),
-    requestAllPages: jest.fn(),
+    request: vi.fn(),
+    requestAllPages: vi.fn(),
   } as unknown as MockClient;
 }
 

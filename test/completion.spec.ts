@@ -1,15 +1,19 @@
-jest.mock("ai", () => {
-  const mockGenerateText = jest.fn().mockResolvedValue({ text: "assistant text" });
-  return {
-    __esModule: true,
-    generateText: mockGenerateText,
-  };
-});
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
-const mockResolveLanguageModel = jest.fn();
-const mockIsLlmProviderConfigured = jest.fn();
+const { mockGenerateText, mockResolveLanguageModel, mockIsLlmProviderConfigured } = vi.hoisted(
+  () => ({
+    mockGenerateText: vi.fn(),
+    mockResolveLanguageModel: vi.fn(),
+    mockIsLlmProviderConfigured: vi.fn(),
+  }),
+);
 
-jest.mock("@mcarvin/smart-diff", () => ({
+vi.mock("ai", () => ({
+  __esModule: true,
+  generateText: mockGenerateText,
+}));
+
+vi.mock("@mcarvin/smart-diff", () => ({
   __esModule: true,
   resolveLanguageModel: mockResolveLanguageModel,
   isLlmProviderConfigured: mockIsLlmProviderConfigured,
@@ -19,14 +23,14 @@ jest.mock("@mcarvin/smart-diff", () => ({
 
 import { createLabflowLlm } from "@src/ai/completion.js";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { generateText } = require("ai") as { generateText: jest.Mock };
+const generateText = mockGenerateText as Mock;
 
 const FAKE_MODEL = { __fakeLanguageModel: true } as unknown;
 
 describe("createLabflowLlm", () => {
   beforeEach(() => {
-    generateText.mockClear();
+    generateText.mockReset();
+    generateText.mockResolvedValue({ text: "assistant text" });
     mockResolveLanguageModel.mockReset();
     mockIsLlmProviderConfigured.mockReset();
     mockIsLlmProviderConfigured.mockReturnValue(true);
@@ -83,7 +87,7 @@ describe("createLabflowLlm", () => {
 
   it("uses the supplied languageModelProvider and skips env resolution", async () => {
     const custom = { __custom: true } as unknown;
-    const provider = jest.fn().mockResolvedValue(custom);
+    const provider = vi.fn().mockResolvedValue(custom);
     mockIsLlmProviderConfigured.mockReturnValue(false);
 
     const llm = createLabflowLlm({ languageModelProvider: provider });

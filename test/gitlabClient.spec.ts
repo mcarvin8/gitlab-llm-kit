@@ -1,9 +1,11 @@
+import { describe, expect, it, vi } from "vitest";
+
 import { GitlabClient } from "@src/gitlab/client.js";
 import { GitlabHttpError } from "@src/gitlab/errors.js";
 
 describe("GitlabClient", () => {
   it("GET parses JSON", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => JSON.stringify({ hello: "world" }),
@@ -18,7 +20,7 @@ describe("GitlabClient", () => {
   });
 
   it("throws GitlabHttpError on non-ok", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: false,
       status: 404,
       text: async () => "missing",
@@ -31,7 +33,7 @@ describe("GitlabClient", () => {
   });
 
   it("requestAllPages stops when page shorter than per_page", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => JSON.stringify([{ id: 1 }]),
@@ -49,7 +51,7 @@ describe("GitlabClient", () => {
 
   it("requestAllPages fetches next page when full", async () => {
     const full = Array.from({ length: 2 }, (_, i) => ({ id: i }));
-    const fetchFn = jest
+    const fetchFn = vi
       .fn()
       .mockResolvedValueOnce({
         ok: true,
@@ -73,7 +75,7 @@ describe("GitlabClient", () => {
   });
 
   it("uses OAuth bearer when oauth is true", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => "{}",
@@ -89,7 +91,7 @@ describe("GitlabClient", () => {
   });
 
   it("returns undefined for empty 200 body", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => "   ",
@@ -103,7 +105,7 @@ describe("GitlabClient", () => {
   });
 
   it("throws when response is not JSON", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => "not json",
@@ -116,7 +118,7 @@ describe("GitlabClient", () => {
   });
 
   it("normalizes base URL without /api/v4", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => "[]",
@@ -131,7 +133,7 @@ describe("GitlabClient", () => {
   });
 
   it("POST sends JSON body", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => '{"ok":true}',
@@ -147,7 +149,7 @@ describe("GitlabClient", () => {
   });
 
   it("requestText returns plain body without JSON parse", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => "section 1\njob output\n",
@@ -161,7 +163,7 @@ describe("GitlabClient", () => {
   });
 
   it("requestText throws GitlabHttpError on non-ok", async () => {
-    const fetchFn = jest.fn().mockResolvedValue({
+    const fetchFn = vi.fn().mockResolvedValue({
       ok: false,
       status: 404,
       text: async () => "missing",

@@ -1,3 +1,5 @@
+import { describe, expect, it, vi, type Mock } from "vitest";
+
 import type { GitlabClient } from "@src/gitlab/client.js";
 import {
   getJob,
@@ -8,18 +10,18 @@ import {
 } from "@src/gitlab/pipelines.js";
 
 function mockClient(): GitlabClient & {
-  request: jest.Mock;
-  requestAllPages: jest.Mock;
-  requestText: jest.Mock;
+  request: Mock;
+  requestAllPages: Mock;
+  requestText: Mock;
 } {
   return {
-    request: jest.fn(),
-    requestAllPages: jest.fn(),
-    requestText: jest.fn(),
+    request: vi.fn(),
+    requestAllPages: vi.fn(),
+    requestText: vi.fn(),
   } as unknown as GitlabClient & {
-    request: jest.Mock;
-    requestAllPages: jest.Mock;
-    requestText: jest.Mock;
+    request: Mock;
+    requestAllPages: Mock;
+    requestText: Mock;
   };
 }
 
