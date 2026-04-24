@@ -48,7 +48,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.53",
     "@ai-sdk/openai-compatible": "^2.0.41",
-    "@mcarvin/smart-diff": "^2.0.0",
+    "@mcarvin/smart-diff": "^2.1.0",
     "ai": "^6.0.168",
     "tslib": "^2.6.2"
   },
