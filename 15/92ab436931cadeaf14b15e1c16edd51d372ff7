@@ -1,0 +1,39 @@
+test/gitlabApi.spec.ts
+  1260c802bfc36c8f 1-2,56-57,60-61,63-64
+test/smartDiffBridge.spec.ts
+  1260c802bfc36c8f 1,3-8,36-37,42-43
+tsconfig.json
+  1260c802bfc36c8f 18
+vitest.config.ts
+  1260c802bfc36c8f 1-12,14-30,32
+.npmignore
+  1260c802bfc36c8f 9
+test/completion.spec.ts
+  1260c802bfc36c8f 1-9,11-14,16,26,32-33,90
+test/gitlabPipelines.spec.ts
+  1260c802bfc36c8f 1-2,13-15,18-20,22-24
+test/gitlabClient.spec.ts
+  1260c802bfc36c8f 1-2
+package.json
+  1260c802bfc36c8f 24-25,39,46-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "1592ab436931cadeaf14b15e1c16edd51d372ff7",
+  "prompts": {
+    "1260c802bfc36c8f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c0ece8ad-1e99-45dc-9d79-7c657e732f8a",
+        "model": "auto-high"
+      },
+      "human_author": "Matt Carvin",
+      "messages": [],
+      "total_additions": 93,
+      "total_deletions": 75,
+      "accepted_lines": 91,
+      "overriden_lines": 0
+    }
+  }
+}
