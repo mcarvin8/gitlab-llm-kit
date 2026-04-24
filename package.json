@@ -1,6 +1,6 @@
 {
   "name": "@mcarvin/gitlab-llm-kit",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "TypeScript toolkit for GitLab REST API workflows using any LLM provider supported by the Vercel AI SDK (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, or any OpenAI-compatible gateway).",
   "author": "Matt Carvin",
   "license": "MIT",

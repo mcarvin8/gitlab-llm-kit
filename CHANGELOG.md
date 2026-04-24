@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.0.0...v2.1.0) (2026-04-24)
+
+
+### Features
+
+* **core:** bump @mcarvin/smart-diff from 2.0.0 to 2.1.0 ([#10](https://github.com/mcarvin8/gitlab-llm-kit/issues/10)) ([dce527f](https://github.com/mcarvin8/gitlab-llm-kit/commit/dce527f9d792c361c2d8bf4460a40793bc219f7d))
+
 ## [2.0.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v1.4.1...v2.0.0) (2026-04-21)
 
 
