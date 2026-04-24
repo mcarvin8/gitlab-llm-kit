@@ -238,8 +238,10 @@ Utilities: `encodeProjectId`, `encodeGroupId`, `encodeQuery`, `GitlabHttpError`,
 
 | Export | Purpose |
 |--------|---------|
-| `summarizeMergeRequestDiffWithSmartDiff` | MR `/changes` patches → `generateSummary`. Optional `postSummaryAsMergeRequestNote` posts the markdown as an MR note (PAT with **`api`** scope). |
-| `summarizeCompareDiffWithSmartDiff` | `/repository/compare` → `generateSummary`. |
+| `summarizeMergeRequestDiffWithSmartDiff` | MR `/changes` patches → `generateSummary`. Optional `postSummaryAsMergeRequestNote` posts the markdown as an MR note (PAT with **`api`** scope). Accepts smart-diff v2.1+ token-reduction controls: `diffShaping` (`stripDiffPreamble`, `maxHunkLines`), `excludeDefaultNoise`, `includeFolders`, `excludeFolders`. |
+| `summarizeCompareDiffWithSmartDiff` | `/repository/compare` → `generateSummary`. Same token-reduction controls as the MR bridge. |
+
+Because GitLab returns a pre-rendered unified diff, only `stripDiffPreamble` and `maxHunkLines` from `DiffShapingOptions` affect the bridge output. `contextLines` and `ignoreWhitespace` are git-arg flags and apply only to the local `summarizeGitDiff` pipeline.
 
 ### Insight functions (`ai…` + helpers)
 
@@ -280,7 +282,7 @@ These take `GitlabClient`, a `LabflowLlm` from `createLabflowLlm()`, and resourc
 
 ### Re-exports from `@mcarvin/smart-diff`
 
-For local git and advanced pipelines: `summarizeGitDiff`, `generateSummary`, `getDiff`, `getDiffSummary`, `getCommits`, `getChangedFiles`, `filterCommitsByMessageRegexes`, `buildDiffPathspecs`, `createGitClient`, `getRepoRoot`, `truncateUnifiedDiffForLlm`, `resolveLlmMaxDiffChars`, `DEFAULT_GIT_DIFF_SYSTEM_PROMPT`, `LLM_GATEWAY_REQUIRED_MESSAGE`, `resolveLanguageModel`, `detectLlmProvider`, `isLlmProviderConfigured`, `defaultModelForProvider`, `resolveLlmBaseUrl`, `parseLlmDefaultHeadersFromEnv`, plus related **types** (`LlmModelProvider`, `ResolveLanguageModelOptions`, `LlmProviderId`, `SummarizeFlags`, `GenerateSummaryInput`, `CommitInfo`, `DiffSummary`, `GitDiffAiSummaryOptions`).
+For local git and advanced pipelines: `summarizeGitDiff`, `generateSummary`, `getDiff`, `getDiffSummary`, `getCommits`, `getChangedFiles`, `filterCommitsByMessageRegexes`, `buildDiffPathspecs`, `buildDiffShapingGitArgs`, `shapeUnifiedDiff`, `DEFAULT_NOISE_EXCLUDES`, `createGitClient`, `getRepoRoot`, `truncateUnifiedDiffForLlm`, `resolveLlmMaxDiffChars`, `DEFAULT_GIT_DIFF_SYSTEM_PROMPT`, `LLM_GATEWAY_REQUIRED_MESSAGE`, `resolveLanguageModel`, `detectLlmProvider`, `isLlmProviderConfigured`, `defaultModelForProvider`, `resolveLlmBaseUrl`, `parseLlmDefaultHeadersFromEnv`, plus related **types** (`LlmModelProvider`, `ResolveLanguageModelOptions`, `LlmProviderId`, `SummarizeFlags`, `GenerateSummaryInput`, `CommitInfo`, `DiffSummary`, `DiffFileSummary`, `DiffPathFilter`, `DiffShapingOptions`, `GitDiffRangeQuery`, `GitDiffAiSummaryOptions`).
 
 The authoritative list of exports is **`src/index.ts`**.
 

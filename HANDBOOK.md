@@ -446,6 +446,16 @@ const markdown = await summarizeMergeRequestDiffWithSmartDiff({
   // model: "claude-3-5-sonnet-latest",
   // maxDiffChars: 80_000,
   // llmModelProvider: async () => myLanguageModel, // bypass env resolution
+
+  // smart-diff v2.1+ unified-diff token-reduction controls:
+  // excludeDefaultNoise: true,            // drop lockfiles, dist/, build/, node_modules/, coverage/, __snapshots__/
+  // includeFolders: ["src"],              // keep only paths under these segments
+  // excludeFolders: ["generated"],        // additional custom exclusions
+  // diffShaping: {
+  //   stripDiffPreamble: true,            // strip `diff --git`, `index`, mode/rename/copy metadata
+  //   maxHunkLines: 400,                  // cap each hunk body; preserves @@ headers
+  //   // contextLines / ignoreWhitespace are git-arg-only (apply to summarizeGitDiff, not to GitLab-sourced diffs)
+  // },
 });
 console.log(markdown);
 ```
@@ -461,6 +471,11 @@ const markdown = await summarizeCompareDiffWithSmartDiff({
   from: "v1.0.0",
   to: "main",
   teamName: "Platform",
+  // Same token-reduction controls as the MR bridge:
+  // excludeDefaultNoise: true,
+  // includeFolders: ["src"],
+  // excludeFolders: ["generated"],
+  // diffShaping: { stripDiffPreamble: true, maxHunkLines: 400 },
 });
 ```
 
@@ -794,6 +809,12 @@ const markdown = await summarizeGitDiff({
   to: "HEAD",
   cwd: "/path/to/repo",
   teamName: "Platform",
+  // smart-diff v2.1+ token-reduction controls (local git path can use all of them):
+  // contextLines: 1,          // `-U1` — 30–60% smaller on modification-heavy diffs
+  // ignoreWhitespace: true,   // `-w` — drops pure-whitespace hunks
+  // stripDiffPreamble: true,  // remove `index`, rename/copy, mode metadata
+  // maxHunkLines: 400,        // cap hunk bodies while keeping @@ headers
+  // excludeDefaultNoise: true // merge DEFAULT_NOISE_EXCLUDES into excludeFolders
 });
 ```
 
@@ -857,6 +878,31 @@ const truncated = truncateUnifiedDiffForLlm(diffText, max);
 void DEFAULT_GIT_DIFF_SYSTEM_PROMPT;
 ```
 
+### Unified-diff shaping (smart-diff v2.1+)
+
+```ts
+import {
+  shapeUnifiedDiff,
+  buildDiffShapingGitArgs,
+  DEFAULT_NOISE_EXCLUDES,
+  type DiffShapingOptions,
+} from "@mcarvin/gitlab-llm-kit";
+
+// Post-process an already-rendered unified diff (e.g. from GitLab `/changes`):
+const shaping: DiffShapingOptions = {
+  stripDiffPreamble: true, // drop `diff --git`, `index`, rename/mode metadata
+  maxHunkLines: 400,       // cap each hunk body; @@ header is preserved
+};
+const leanDiff = shapeUnifiedDiff(rawDiff, shaping);
+
+// Build equivalent `git diff` args for shaping options that only git can honor
+// (contextLines → `-U<n>`, ignoreWhitespace → `-w`):
+const gitArgs = buildDiffShapingGitArgs({ contextLines: 1, ignoreWhitespace: true });
+// → ["-U1", "-w"]
+
+void DEFAULT_NOISE_EXCLUDES; // lockfiles, node_modules, dist, build, out, coverage, __snapshots__
+```
+
 ---
 
 ## Types
@@ -888,6 +934,10 @@ import type {
   GitDiffAiSummaryOptions,
   CommitInfo,
   DiffSummary,
+  DiffFileSummary,
+  DiffPathFilter,
+  DiffShapingOptions,
+  GitDiffRangeQuery,
   GenerateSummaryInput,
   SummarizeFlags,
   LlmModelProvider,
