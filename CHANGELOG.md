@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.1.0...v2.2.0) (2026-05-02)
+
+
+### Features
+
+* **ai:** bump @mcarvin/smart-diff from 2.1.0 to 2.2.0 ([#13](https://github.com/mcarvin8/gitlab-llm-kit/issues/13)) ([cb1c9ce](https://github.com/mcarvin8/gitlab-llm-kit/commit/cb1c9cec2a63d9bedea0fbe55f47546ad6c0310f))
+* **ai:** bump the ai-sdk group across 1 directory with 14 updates ([#12](https://github.com/mcarvin8/gitlab-llm-kit/issues/12)) ([5a46080](https://github.com/mcarvin8/gitlab-llm-kit/commit/5a46080c0b91f444141942098f44ab2ed8101d00))
+
 ## [2.1.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.0.0...v2.1.0) (2026-04-24)
 
 
