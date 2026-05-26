@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.2.0...v2.2.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **deps:** pin direct dependencies to exact versions ([#15](https://github.com/mcarvin8/gitlab-llm-kit/issues/15)) ([00cb500](https://github.com/mcarvin8/gitlab-llm-kit/commit/00cb500091442c4541af981ae160a084cce82fba))
+
 ## [2.2.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.1.0...v2.2.0) (2026-05-02)
 
 
