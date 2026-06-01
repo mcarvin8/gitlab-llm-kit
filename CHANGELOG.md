@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.2.1...v2.3.0) (2026-06-01)
+
+
+### Features
+
+* **ai:** bump the ai-sdk group with 11 updates ([#17](https://github.com/mcarvin8/gitlab-llm-kit/issues/17)) ([7657617](https://github.com/mcarvin8/gitlab-llm-kit/commit/7657617902ffdd40918a0ba715ee6c3b00256245))
+
 ## [2.2.1](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.2.0...v2.2.1) (2026-05-26)
 
 
