@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.3.0...v2.3.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **deps:** bump smart-diff ([#19](https://github.com/mcarvin8/gitlab-llm-kit/issues/19)) ([7b330eb](https://github.com/mcarvin8/gitlab-llm-kit/commit/7b330eb1a798ffea8f99daca2fc83c93c544c4ae))
+
 ## [2.3.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.2.1...v2.3.0) (2026-06-01)
 
 
