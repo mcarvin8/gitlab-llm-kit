@@ -7,7 +7,10 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   resolve: {
     alias: [
-      { find: /^@src\/(.+)\.js$/, replacement: path.resolve(rootDir, "src/$1.ts") },
+      {
+        find: /^@src\/(.+)\.js$/,
+        replacement: path.resolve(rootDir, "src/$1.ts"),
+      },
       { find: /^@src\/(.+)$/, replacement: path.resolve(rootDir, "src/$1") },
     ],
   },

@@ -1,5 +1,8 @@
 import type { LabflowLlm } from "../ai/types.js";
-import { POLICY_DEFAULT, POLICY_NO_SECRET_EXFILTRATION } from "../ai/policies.js";
+import {
+  POLICY_DEFAULT,
+  POLICY_NO_SECRET_EXFILTRATION,
+} from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import {
@@ -52,7 +55,10 @@ export async function aiWikiRunbookTldr(
   options?: AiWikiRunbookTldrOptions,
 ): Promise<string> {
   const page = await getWikiPage(client, projectId, slug, options?.wikiVersion);
-  const user = truncateForPrompt(page.content ?? "", options?.maxPromptChars ?? 80_000);
+  const user = truncateForPrompt(
+    page.content ?? "",
+    options?.maxPromptChars ?? 80_000,
+  );
 
   const summary = await llm({
     model: options?.model,

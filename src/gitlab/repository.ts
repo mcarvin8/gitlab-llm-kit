@@ -8,7 +8,10 @@ export async function listCommits(
   query?: { ref_name?: string; path?: string; since?: string; until?: string },
 ): Promise<Commit[]> {
   const id = encodeProjectId(projectId);
-  return client.requestAllPages<Commit>(`/projects/${id}/repository/commits`, query ?? {});
+  return client.requestAllPages<Commit>(
+    `/projects/${id}/repository/commits`,
+    query ?? {},
+  );
 }
 
 export async function listCommitComments(
@@ -17,7 +20,9 @@ export async function listCommitComments(
   sha: string,
 ): Promise<Note[]> {
   const id = encodeProjectId(projectId);
-  return client.requestAllPages<Note>(`/projects/${id}/repository/commits/${sha}/comments`);
+  return client.requestAllPages<Note>(
+    `/projects/${id}/repository/commits/${sha}/comments`,
+  );
 }
 
 /**
@@ -47,9 +52,13 @@ export async function getFile(
   ref: string,
 ): Promise<Blob> {
   const id = encodeProjectId(projectId);
-  return client.request<Blob>("GET", `/projects/${id}/repository/files/${encodeURIComponent(filePath.trim())}`, {
-    query: { ref },
-  });
+  return client.request<Blob>(
+    "GET",
+    `/projects/${id}/repository/files/${encodeURIComponent(filePath.trim())}`,
+    {
+      query: { ref },
+    },
+  );
 }
 
 export async function compareRefs(
@@ -59,7 +68,11 @@ export async function compareRefs(
   to: string,
 ): Promise<RepositoryCompare> {
   const id = encodeProjectId(projectId);
-  return client.request<RepositoryCompare>("GET", `/projects/${id}/repository/compare`, {
-    query: { from, to },
-  });
+  return client.request<RepositoryCompare>(
+    "GET",
+    `/projects/${id}/repository/compare`,
+    {
+      query: { from, to },
+    },
+  );
 }

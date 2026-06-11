@@ -72,7 +72,9 @@ describe("smartDiffBridge", () => {
     client.request
       .mockResolvedValueOnce({ target_branch: "main", source_branch: "feat/x" })
       .mockResolvedValueOnce({ changes: [makeChange("src/app.ts")] });
-    client.requestAllPages.mockResolvedValueOnce([{ id: "abc", message: "commit" }]);
+    client.requestAllPages.mockResolvedValueOnce([
+      { id: "abc", message: "commit" },
+    ]);
 
     const shaping = { stripDiffPreamble: true, maxHunkLines: 50 };
     const out = await summarizeMergeRequestDiffWithSmartDiff({
@@ -83,7 +85,10 @@ describe("smartDiffBridge", () => {
     });
 
     expect(out).toBe("SUMMARY");
-    expect(mockShapeUnifiedDiff).toHaveBeenCalledWith(expect.any(String), shaping);
+    expect(mockShapeUnifiedDiff).toHaveBeenCalledWith(
+      expect.any(String),
+      shaping,
+    );
   });
 
   it("summarizeMergeRequestDiffWithSmartDiff drops DEFAULT_NOISE_EXCLUDES entries", async () => {
@@ -98,7 +103,9 @@ describe("smartDiffBridge", () => {
           makeChange("nested/node_modules/pkg/index.js"),
         ],
       });
-    client.requestAllPages.mockResolvedValueOnce([{ id: "abc", message: "commit" }]);
+    client.requestAllPages.mockResolvedValueOnce([
+      { id: "abc", message: "commit" },
+    ]);
 
     await summarizeMergeRequestDiffWithSmartDiff({
       client,
@@ -139,7 +146,9 @@ describe("smartDiffBridge", () => {
       excludeFolders: ["legacy"],
     });
 
-    const passed = mockGenerateSummary.mock.calls[0][0] as { fileNames: string[] };
+    const passed = mockGenerateSummary.mock.calls[0][0] as {
+      fileNames: string[];
+    };
     expect(passed.fileNames).toEqual(["src/app.ts"]);
   });
 
@@ -159,7 +168,9 @@ describe("smartDiffBridge", () => {
       diffShaping: { stripDiffPreamble: true },
     });
 
-    const passed = mockGenerateSummary.mock.calls[0][0] as { fileNames: string[] };
+    const passed = mockGenerateSummary.mock.calls[0][0] as {
+      fileNames: string[];
+    };
     expect(passed.fileNames).toEqual(["src/app.ts"]);
     expect(mockShapeUnifiedDiff).toHaveBeenCalledWith(expect.any(String), {
       stripDiffPreamble: true,
@@ -179,6 +190,9 @@ describe("smartDiffBridge", () => {
       mergeRequestIid: 7,
     });
 
-    expect(mockShapeUnifiedDiff).toHaveBeenCalledWith(expect.any(String), undefined);
+    expect(mockShapeUnifiedDiff).toHaveBeenCalledWith(
+      expect.any(String),
+      undefined,
+    );
   });
 });

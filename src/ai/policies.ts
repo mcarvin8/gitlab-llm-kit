@@ -8,5 +8,7 @@ export const POLICY_SECURITY_FINDINGS =
 export const POLICY_HUMAN_REVIEW =
   "You assist human reviewers and maintainers. Do not claim to have shipped, merged, or approved changes.";
 
-export const POLICY_DEFAULT =
-  [POLICY_NO_SECRET_EXFILTRATION, POLICY_HUMAN_REVIEW].join("\n");
+export const POLICY_DEFAULT = [
+  POLICY_NO_SECRET_EXFILTRATION,
+  POLICY_HUMAN_REVIEW,
+].join("\n");

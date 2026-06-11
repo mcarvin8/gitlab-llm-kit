@@ -24,7 +24,9 @@ export class GitlabClient {
   private readonly fetchImpl: typeof fetch;
 
   constructor(options: GitlabClientOptions) {
-    this.baseUrl = normalizeBaseUrl(options.baseUrl ?? "https://gitlab.com/api/v4");
+    this.baseUrl = normalizeBaseUrl(
+      options.baseUrl ?? "https://gitlab.com/api/v4",
+    );
     this.token = options.token;
     this.oauth = options.oauth ?? false;
     this.fetchImpl = options.fetchFn ?? fetch;
@@ -32,14 +34,20 @@ export class GitlabClient {
 
   private headers(): HeadersInit {
     return this.oauth
-      ? { Authorization: `Bearer ${this.token}`, "Content-Type": "application/json" }
+      ? {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        }
       : { "PRIVATE-TOKEN": this.token, "Content-Type": "application/json" };
   }
 
   async request<T>(
     method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
-    init?: { query?: Record<string, string | number | boolean | undefined>; body?: unknown },
+    init?: {
+      query?: Record<string, string | number | boolean | undefined>;
+      body?: unknown;
+    },
   ): Promise<T> {
     const q = init?.query ? encodeQuery(init.query) : "";
     const url = `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}${q}`;
@@ -47,16 +55,18 @@ export class GitlabClient {
     const res = await this.fetchImpl(url, {
       method,
       headers: this.headers(),
-      body:
-        init?.body !== undefined ? JSON.stringify(init.body) : undefined,
+      body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
     });
 
     const text = await res.text();
     if (!res.ok) {
-      throw new GitlabHttpError(`GitLab ${method} ${path} failed: ${res.status}`, {
-        status: res.status,
-        body: text,
-      });
+      throw new GitlabHttpError(
+        `GitLab ${method} ${path} failed: ${res.status}`,
+        {
+          status: res.status,
+          body: text,
+        },
+      );
     }
 
     if (!text || text.trim().length === 0) {
@@ -66,10 +76,13 @@ export class GitlabClient {
     try {
       return JSON.parse(text) as T;
     } catch {
-      throw new GitlabHttpError(`GitLab ${method} ${path}: response was not JSON`, {
-        status: res.status,
-        body: text.slice(0, 2000),
-      });
+      throw new GitlabHttpError(
+        `GitLab ${method} ${path}: response was not JSON`,
+        {
+          status: res.status,
+          body: text.slice(0, 2000),
+        },
+      );
     }
   }
 
@@ -80,7 +93,10 @@ export class GitlabClient {
   async requestText(
     method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
-    init?: { query?: Record<string, string | number | boolean | undefined>; body?: unknown },
+    init?: {
+      query?: Record<string, string | number | boolean | undefined>;
+      body?: unknown;
+    },
   ): Promise<string> {
     const q = init?.query ? encodeQuery(init.query) : "";
     const url = `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}${q}`;
@@ -88,16 +104,18 @@ export class GitlabClient {
     const res = await this.fetchImpl(url, {
       method,
       headers: this.headers(),
-      body:
-        init?.body !== undefined ? JSON.stringify(init.body) : undefined,
+      body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
     });
 
     const text = await res.text();
     if (!res.ok) {
-      throw new GitlabHttpError(`GitLab ${method} ${path} failed: ${res.status}`, {
-        status: res.status,
-        body: text,
-      });
+      throw new GitlabHttpError(
+        `GitLab ${method} ${path} failed: ${res.status}`,
+        {
+          status: res.status,
+          body: text,
+        },
+      );
     }
 
     return text;

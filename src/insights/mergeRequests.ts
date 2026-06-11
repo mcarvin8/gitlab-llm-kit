@@ -20,7 +20,9 @@ function formatMrHeader(mr: MergeRequest): string {
   const labels = Array.isArray(mr.labels)
     ? mr.labels.map((l) => (typeof l === "string" ? l : l.name))
     : [];
-  const assignees = (mr.assignees ?? []).map((a) => a.username ?? a.name).join(", ");
+  const assignees = (mr.assignees ?? [])
+    .map((a) => a.username ?? a.name)
+    .join(", ");
   return [
     `Title: ${mr.title}`,
     mr.description ? `Description:\n${mr.description}` : "",
@@ -50,7 +52,9 @@ async function maybePostMergeRequestSummary(
   if (!post) {
     return;
   }
-  await createMergeRequestNote(client, projectId, mergeRequestIid, { body: summary });
+  await createMergeRequestNote(client, projectId, mergeRequestIid, {
+    body: summary,
+  });
 }
 
 /** Compact digest of MR discussion (title, description, all notes / discussion threads). */
@@ -225,7 +229,10 @@ export async function aiMergeRequestReviewerBriefingMeta(
   options?: AiMergeRequestInsightOptions,
 ): Promise<string> {
   const mr = await getMergeRequest(client, projectId, mergeRequestIid);
-  const user = truncateForPrompt(`${formatMrHeader(mr)}`, options?.maxPromptChars ?? 16_000);
+  const user = truncateForPrompt(
+    `${formatMrHeader(mr)}`,
+    options?.maxPromptChars ?? 16_000,
+  );
 
   const summary = await llm({
     model: options?.model,

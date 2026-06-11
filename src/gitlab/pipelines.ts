@@ -8,7 +8,10 @@ export async function listPipelines(
   query?: Record<string, string | number | boolean | undefined>,
 ): Promise<Pipeline[]> {
   const id = encodeProjectId(projectId);
-  return client.requestAllPages<Pipeline>(`/projects/${id}/pipelines`, query ?? {});
+  return client.requestAllPages<Pipeline>(
+    `/projects/${id}/pipelines`,
+    query ?? {},
+  );
 }
 
 export async function getPipeline(
@@ -17,7 +20,10 @@ export async function getPipeline(
   pipelineId: number,
 ): Promise<Pipeline> {
   const id = encodeProjectId(projectId);
-  return client.request<Pipeline>("GET", `/projects/${id}/pipelines/${pipelineId}`);
+  return client.request<Pipeline>(
+    "GET",
+    `/projects/${id}/pipelines/${pipelineId}`,
+  );
 }
 
 export async function listPipelineJobs(

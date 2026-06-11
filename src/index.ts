@@ -45,11 +45,7 @@ export {
   createIssueNote,
   listProjectIssues,
 } from "./gitlab/issues.js";
-export {
-  getEpic,
-  listEpicIssues,
-  listGroupEpics,
-} from "./gitlab/epics.js";
+export { getEpic, listEpicIssues, listGroupEpics } from "./gitlab/epics.js";
 export {
   listCommits,
   listCommitComments,
@@ -76,7 +72,12 @@ export {
   listProjectSnippets,
   getSnippet,
 } from "./gitlab/wikiAndSnippets.js";
-export { searchGitlab, searchInProject, searchInGroup, type SearchScope } from "./gitlab/search.js";
+export {
+  searchGitlab,
+  searchInProject,
+  searchInGroup,
+  type SearchScope,
+} from "./gitlab/search.js";
 export { listDeployments, listEnvironments } from "./gitlab/deployments.js";
 export {
   listPipelines,
@@ -101,7 +102,10 @@ export {
   POLICY_SECURITY_FINDINGS,
 } from "./ai/policies.js";
 export { truncateForPrompt } from "./ai/textLimits.js";
-export { createLabflowLlm, type CreateLabflowLlmOptions } from "./ai/completion.js";
+export {
+  createLabflowLlm,
+  type CreateLabflowLlmOptions,
+} from "./ai/completion.js";
 
 export {
   summarizeMergeRequestDiffWithSmartDiff,

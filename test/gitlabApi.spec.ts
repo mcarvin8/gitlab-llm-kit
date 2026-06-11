@@ -3,15 +3,8 @@ import { describe, expect, it, vi, type Mock } from "vitest";
 import type { GitlabClient } from "@src/gitlab/client.js";
 import { GitlabHttpError } from "@src/gitlab/errors.js";
 import { listProjectAuditEvents } from "@src/gitlab/audit.js";
-import {
-  listDeployments,
-  listEnvironments,
-} from "@src/gitlab/deployments.js";
-import {
-  getEpic,
-  listEpicIssues,
-  listGroupEpics,
-} from "@src/gitlab/epics.js";
+import { listDeployments, listEnvironments } from "@src/gitlab/deployments.js";
+import { getEpic, listEpicIssues, listGroupEpics } from "@src/gitlab/epics.js";
 import { listGroupEvents, listProjectEvents } from "@src/gitlab/events.js";
 import {
   createIssueNote,
@@ -28,7 +21,11 @@ import {
   listMergeRequestNotes,
 } from "@src/gitlab/mergeRequests.js";
 import { getProject, getReadmeFile } from "@src/gitlab/projectMeta.js";
-import { getReleaseByTag, listReleases, upsertRelease } from "@src/gitlab/releases.js";
+import {
+  getReleaseByTag,
+  listReleases,
+  upsertRelease,
+} from "@src/gitlab/releases.js";
 import {
   compareRefs,
   createCommitNote,
@@ -142,13 +139,15 @@ describe("gitlab API wrappers", () => {
     );
 
     await listProjectIssues(c, "g/p", { state: "opened" });
-    expect(c.requestAllPages).toHaveBeenCalledWith(
-      "/projects/g%2Fp/issues",
-      { state: "opened" },
-    );
+    expect(c.requestAllPages).toHaveBeenCalledWith("/projects/g%2Fp/issues", {
+      state: "opened",
+    });
 
     await listProjectIssues(c, "g/p");
-    expect(c.requestAllPages).toHaveBeenCalledWith("/projects/g%2Fp/issues", {});
+    expect(c.requestAllPages).toHaveBeenCalledWith(
+      "/projects/g%2Fp/issues",
+      {},
+    );
   });
 
   it("createIssueNote", async () => {
@@ -171,7 +170,9 @@ describe("gitlab API wrappers", () => {
 
     c.requestAllPages.mockResolvedValue([]);
     await listEpicIssues(c, "grp", 2);
-    expect(c.requestAllPages).toHaveBeenCalledWith("/groups/grp/epics/2/issues");
+    expect(c.requestAllPages).toHaveBeenCalledWith(
+      "/groups/grp/epics/2/issues",
+    );
 
     await listGroupEpics(c, "grp", { state: "opened" });
     expect(c.requestAllPages).toHaveBeenCalledWith("/groups/grp/epics", {
@@ -222,10 +223,7 @@ describe("gitlab API wrappers", () => {
     const c = mockClient();
     c.request.mockResolvedValue({ tag_name: "v1" });
     await getReleaseByTag(c, "p", "v1.0");
-    expect(c.request).toHaveBeenCalledWith(
-      "GET",
-      "/projects/p/releases/v1.0",
-    );
+    expect(c.request).toHaveBeenCalledWith("GET", "/projects/p/releases/v1.0");
 
     c.requestAllPages.mockResolvedValue([]);
     await listReleases(c, "p");
@@ -243,9 +241,14 @@ describe("gitlab API wrappers", () => {
       "GET",
       "/projects/p/releases/v2.0.0",
     );
-    expect(c.request).toHaveBeenNthCalledWith(2, "PUT", "/projects/p/releases/v2.0.0", {
-      body: { description: "new" },
-    });
+    expect(c.request).toHaveBeenNthCalledWith(
+      2,
+      "PUT",
+      "/projects/p/releases/v2.0.0",
+      {
+        body: { description: "new" },
+      },
+    );
     expect(r.description).toBe("new");
   });
 
@@ -258,9 +261,14 @@ describe("gitlab API wrappers", () => {
       description: "d",
       name: "Release 1",
     });
-    expect(c.request).toHaveBeenNthCalledWith(2, "PUT", "/projects/p/releases/v1", {
-      body: { description: "d", name: "Release 1" },
-    });
+    expect(c.request).toHaveBeenNthCalledWith(
+      2,
+      "PUT",
+      "/projects/p/releases/v1",
+      {
+        body: { description: "d", name: "Release 1" },
+      },
+    );
   });
 
   it("upsertRelease creates when GET returns 404", async () => {
@@ -275,13 +283,18 @@ describe("gitlab API wrappers", () => {
         description: "fresh",
       });
     const r = await upsertRelease(c, "p", "v3", { description: "fresh" });
-    expect(c.request).toHaveBeenNthCalledWith(2, "POST", "/projects/p/releases", {
-      body: {
-        tag_name: "v3",
-        description: "fresh",
-        name: "v3",
+    expect(c.request).toHaveBeenNthCalledWith(
+      2,
+      "POST",
+      "/projects/p/releases",
+      {
+        body: {
+          tag_name: "v3",
+          description: "fresh",
+          name: "v3",
+        },
       },
-    });
+    );
     expect(r.description).toBe("fresh");
   });
 
@@ -297,14 +310,19 @@ describe("gitlab API wrappers", () => {
       ref: "main",
       name: "V four",
     });
-    expect(c.request).toHaveBeenNthCalledWith(2, "POST", "/projects/p/releases", {
-      body: {
-        tag_name: "v4",
-        description: "d",
-        name: "V four",
-        ref: "main",
+    expect(c.request).toHaveBeenNthCalledWith(
+      2,
+      "POST",
+      "/projects/p/releases",
+      {
+        body: {
+          tag_name: "v4",
+          description: "d",
+          name: "V four",
+          ref: "main",
+        },
       },
-    });
+    );
   });
 
   it("upsertRelease rethrows non-404 from getReleaseByTag", async () => {
@@ -403,15 +421,33 @@ describe("gitlab API wrappers", () => {
   it("upsertWikiPage updates when page exists", async () => {
     const c = mockClient();
     c.request
-      .mockResolvedValueOnce({ slug: "cadence", title: "Cadence", content: "old" })
-      .mockResolvedValueOnce({ slug: "cadence", title: "Cadence", content: "new" });
+      .mockResolvedValueOnce({
+        slug: "cadence",
+        title: "Cadence",
+        content: "old",
+      })
+      .mockResolvedValueOnce({
+        slug: "cadence",
+        title: "Cadence",
+        content: "new",
+      });
     const p = await upsertWikiPage(c, "p", "cadence", { content: "new" });
-    expect(c.request).toHaveBeenNthCalledWith(1, "GET", "/projects/p/wikis/cadence", {
-      query: undefined,
-    });
-    expect(c.request).toHaveBeenNthCalledWith(2, "PUT", "/projects/p/wikis/cadence", {
-      body: { content: "new" },
-    });
+    expect(c.request).toHaveBeenNthCalledWith(
+      1,
+      "GET",
+      "/projects/p/wikis/cadence",
+      {
+        query: undefined,
+      },
+    );
+    expect(c.request).toHaveBeenNthCalledWith(
+      2,
+      "PUT",
+      "/projects/p/wikis/cadence",
+      {
+        body: { content: "new" },
+      },
+    );
     expect(p.content).toBe("new");
   });
 
@@ -436,8 +472,15 @@ describe("gitlab API wrappers", () => {
       .mockRejectedValueOnce(
         new GitlabHttpError("missing", { status: 404, body: "{}" }),
       )
-      .mockResolvedValueOnce({ slug: "cadence", title: "cadence", content: "x" });
-    await upsertWikiPage(c, "p", "cadence", { content: "x", title: "Release cadence" });
+      .mockResolvedValueOnce({
+        slug: "cadence",
+        title: "cadence",
+        content: "x",
+      });
+    await upsertWikiPage(c, "p", "cadence", {
+      content: "x",
+      title: "Release cadence",
+    });
     expect(c.request).toHaveBeenNthCalledWith(2, "POST", "/projects/p/wikis", {
       body: {
         title: "Release cadence",
@@ -467,7 +510,9 @@ describe("gitlab API wrappers", () => {
     c.request.mockRejectedValueOnce(
       new GitlabHttpError("no", { status: 403, body: "{}" }),
     );
-    await expect(upsertWikiPage(c, "p", "s", { content: "x" })).rejects.toMatchObject({
+    await expect(
+      upsertWikiPage(c, "p", "s", { content: "x" }),
+    ).rejects.toMatchObject({
       status: 403,
     });
   });
@@ -509,15 +554,12 @@ describe("gitlab API wrappers", () => {
     const c = mockClient();
     c.requestAllPages.mockResolvedValue([]);
     await listDeployments(c, "p", { environment: "prod" });
-    expect(c.requestAllPages).toHaveBeenCalledWith(
-      "/projects/p/deployments",
-      { environment: "prod" },
-    );
+    expect(c.requestAllPages).toHaveBeenCalledWith("/projects/p/deployments", {
+      environment: "prod",
+    });
 
     await listEnvironments(c, "p");
-    expect(c.requestAllPages).toHaveBeenCalledWith(
-      "/projects/p/environments",
-    );
+    expect(c.requestAllPages).toHaveBeenCalledWith("/projects/p/environments");
   });
 
   it("events", async () => {

@@ -2,7 +2,12 @@ import type { LabflowLlm } from "../ai/types.js";
 import { POLICY_DEFAULT } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
-import { createIssueNote, getIssue, listIssueNotes, listProjectIssues } from "../gitlab/issues.js";
+import {
+  createIssueNote,
+  getIssue,
+  listIssueNotes,
+  listProjectIssues,
+} from "../gitlab/issues.js";
 import type { Issue } from "../gitlab/types.js";
 
 function formatIssueHeader(issue: Issue): string {
@@ -22,7 +27,11 @@ function formatIssueHeader(issue: Issue): string {
     .join("\n");
 }
 
-function formatNote(n: { body?: string; author?: { username?: string; name?: string }; created_at?: string }): string {
+function formatNote(n: {
+  body?: string;
+  author?: { username?: string; name?: string };
+  created_at?: string;
+}): string {
   const who = n.author?.username ?? n.author?.name ?? "?";
   return `[${n.created_at ?? ""}] @${who}: ${n.body ?? ""}`;
 }
@@ -66,7 +75,13 @@ export async function aiIssueThreadSummary(
     system: `${POLICY_DEFAULT}\nSummarize a long issue thread: decisions, blockers, next steps. Markdown.`,
     user,
   });
-  await maybePostIssueSummary(client, projectId, issueIid, summary, options?.postSummaryAsIssueNote);
+  await maybePostIssueSummary(
+    client,
+    projectId,
+    issueIid,
+    summary,
+    options?.postSummaryAsIssueNote,
+  );
   return summary;
 }
 
@@ -89,7 +104,13 @@ export async function aiStaleIssueSummary(
     system: `${POLICY_DEFAULT}\nAssess staleness: lastactivity, unclear ownership, recommended ping or close criteria. Markdown.`,
     user,
   });
-  await maybePostIssueSummary(client, projectId, issueIid, summary, options?.postSummaryAsIssueNote);
+  await maybePostIssueSummary(
+    client,
+    projectId,
+    issueIid,
+    summary,
+    options?.postSummaryAsIssueNote,
+  );
   return summary;
 }
 
@@ -112,7 +133,13 @@ export async function aiIssueSuggestedNextStep(
     system: `${POLICY_DEFAULT}\nPropose the smallest next step toward resolution and closure criteria. Markdown checklist.`,
     user,
   });
-  await maybePostIssueSummary(client, projectId, issueIid, summary, options?.postSummaryAsIssueNote);
+  await maybePostIssueSummary(
+    client,
+    projectId,
+    issueIid,
+    summary,
+    options?.postSummaryAsIssueNote,
+  );
   return summary;
 }
 

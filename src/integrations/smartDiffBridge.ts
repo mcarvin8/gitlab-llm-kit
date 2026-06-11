@@ -81,7 +81,10 @@ function normalizePatterns(patterns: readonly string[] | undefined): string[] {
   const out: string[] = [];
   for (const raw of patterns) {
     if (typeof raw !== "string") continue;
-    const trimmed = raw.trim().replace(/^\.\//, "").replace(/^\/+|\/+$/g, "");
+    const trimmed = raw
+      .trim()
+      .replace(/^\.\//, "")
+      .replace(/^\/+|\/+$/g, "");
     if (trimmed) out.push(trimmed);
   }
   return out;
@@ -124,34 +127,44 @@ function buildPathFilter(
   return { includes, excludes };
 }
 
-function filterDiffFiles(diffs: MrDiffFile[], filter: PathFilter): MrDiffFile[] {
-  if (filter.includes.length === 0 && filter.excludes.length === 0) return diffs;
+function filterDiffFiles(
+  diffs: MrDiffFile[],
+  filter: PathFilter,
+): MrDiffFile[] {
+  if (filter.includes.length === 0 && filter.excludes.length === 0)
+    return diffs;
   return diffs.filter((c) => {
     const newPath = c.new_path ?? "";
     const oldPath = c.old_path ?? "";
-    const candidatePaths = [newPath, oldPath].filter((p): p is string => p.length > 0);
+    const candidatePaths = [newPath, oldPath].filter(
+      (p): p is string => p.length > 0,
+    );
     if (candidatePaths.length === 0) return true;
     if (filter.excludes.length > 0) {
-      const allExcluded = candidatePaths.every((p) => pathMatchesAny(p, filter.excludes));
+      const allExcluded = candidatePaths.every((p) =>
+        pathMatchesAny(p, filter.excludes),
+      );
       if (allExcluded) return false;
     }
     if (filter.includes.length > 0) {
-      const anyIncluded = candidatePaths.some((p) => pathMatchesAny(p, filter.includes));
+      const anyIncluded = candidatePaths.some((p) =>
+        pathMatchesAny(p, filter.includes),
+      );
       if (!anyIncluded) return false;
     }
     return true;
   });
 }
 
-function buildUnifiedDiffFromMrChanges(
-  diffs: MrDiffFile[],
-): { diffText: string; fileNames: string[] } {
+function buildUnifiedDiffFromMrChanges(diffs: MrDiffFile[]): {
+  diffText: string;
+  fileNames: string[];
+} {
   const fileNames: string[] = [];
   const parts: string[] = [];
 
   for (const c of diffs) {
-    const name =
-      c.new_path ?? c.old_path ?? "unknown";
+    const name = c.new_path ?? c.old_path ?? "unknown";
     fileNames.push(name);
     parts.push(
       `diff --git a/${c.old_path ?? "/dev/null"} b/${c.new_path ?? "/dev/null"}\n${c.diff}`,
@@ -174,13 +187,22 @@ export async function summarizeMergeRequestDiffWithSmartDiff(
     options.mergeRequestIid,
   );
   const [changes, commits] = await Promise.all([
-    getMergeRequestChanges(options.client, options.projectId, options.mergeRequestIid),
-    listMergeRequestCommits(options.client, options.projectId, options.mergeRequestIid),
+    getMergeRequestChanges(
+      options.client,
+      options.projectId,
+      options.mergeRequestIid,
+    ),
+    listMergeRequestCommits(
+      options.client,
+      options.projectId,
+      options.mergeRequestIid,
+    ),
   ]);
 
   const filter = buildPathFilter(options);
   const filteredChanges = filterDiffFiles(changes.changes ?? [], filter);
-  const { diffText: rawDiff, fileNames } = buildUnifiedDiffFromMrChanges(filteredChanges);
+  const { diffText: rawDiff, fileNames } =
+    buildUnifiedDiffFromMrChanges(filteredChanges);
 
   const commitInfos: CommitInfo[] = commits.map((c) => ({
     hash: c.id,
@@ -211,9 +233,14 @@ export async function summarizeMergeRequestDiffWithSmartDiff(
   });
 
   if (options.postSummaryAsMergeRequestNote) {
-    await createMergeRequestNote(options.client, options.projectId, options.mergeRequestIid, {
-      body: summary,
-    });
+    await createMergeRequestNote(
+      options.client,
+      options.projectId,
+      options.mergeRequestIid,
+      {
+        body: summary,
+      },
+    );
   }
 
   return summary;
@@ -244,7 +271,12 @@ export type SummarizeCompareDiffOptions = {
 export async function summarizeCompareDiffWithSmartDiff(
   options: SummarizeCompareDiffOptions,
 ): Promise<string> {
-  const cmp = await compareRefs(options.client, options.projectId, options.from, options.to);
+  const cmp = await compareRefs(
+    options.client,
+    options.projectId,
+    options.from,
+    options.to,
+  );
   const filter = buildPathFilter(options);
   const diffs = filterDiffFiles(cmp.diffs ?? [], filter);
   const { diffText: rawDiff, fileNames } = buildUnifiedDiffFromMrChanges(diffs);

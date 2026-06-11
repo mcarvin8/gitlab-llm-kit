@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
-const { mockGenerateText, mockResolveLanguageModel, mockIsLlmProviderConfigured } = vi.hoisted(
-  () => ({
-    mockGenerateText: vi.fn(),
-    mockResolveLanguageModel: vi.fn(),
-    mockIsLlmProviderConfigured: vi.fn(),
-  }),
-);
+const {
+  mockGenerateText,
+  mockResolveLanguageModel,
+  mockIsLlmProviderConfigured,
+} = vi.hoisted(() => ({
+  mockGenerateText: vi.fn(),
+  mockResolveLanguageModel: vi.fn(),
+  mockIsLlmProviderConfigured: vi.fn(),
+}));
 
 vi.mock("ai", () => ({
   __esModule: true,
@@ -70,7 +72,10 @@ describe("createLabflowLlm", () => {
   });
 
   it("passes an explicit provider through to resolveLanguageModel", async () => {
-    const llm = createLabflowLlm({ provider: "anthropic", defaultModel: "claude" });
+    const llm = createLabflowLlm({
+      provider: "anthropic",
+      defaultModel: "claude",
+    });
     await llm({ system: "s", user: "u" });
     expect(mockResolveLanguageModel).toHaveBeenCalledWith(
       expect.objectContaining({ provider: "anthropic", model: "claude" }),

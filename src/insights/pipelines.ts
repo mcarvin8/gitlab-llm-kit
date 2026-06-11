@@ -1,5 +1,8 @@
 import type { LabflowLlm } from "../ai/types.js";
-import { POLICY_DEFAULT, POLICY_NO_SECRET_EXFILTRATION } from "../ai/policies.js";
+import {
+  POLICY_DEFAULT,
+  POLICY_NO_SECRET_EXFILTRATION,
+} from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import {
@@ -128,7 +131,10 @@ export async function aiPipelineRunSummary(
     );
   }
 
-  const user = truncateForPrompt(lines.join("\n"), options?.maxPromptChars ?? 120_000);
+  const user = truncateForPrompt(
+    lines.join("\n"),
+    options?.maxPromptChars ?? 120_000,
+  );
 
   return llm({
     model: options?.model,

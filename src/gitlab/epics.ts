@@ -25,9 +25,7 @@ export async function listEpicIssues(
   }>
 > {
   const gid = encodeGroupId(groupId);
-  return client.requestAllPages(
-    `/groups/${gid}/epics/${epicIid}/issues`,
-  );
+  return client.requestAllPages(`/groups/${gid}/epics/${epicIid}/issues`);
 }
 
 export async function listGroupEpics(

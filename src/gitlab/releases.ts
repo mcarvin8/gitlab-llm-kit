@@ -59,12 +59,16 @@ export async function upsertRelease(
   }
 
   if (existing) {
-    return client.request<Release>("PUT", `/projects/${id}/releases/${pathTag}`, {
-      body: {
-        description: params.description,
-        ...(params.name !== undefined ? { name: params.name } : {}),
+    return client.request<Release>(
+      "PUT",
+      `/projects/${id}/releases/${pathTag}`,
+      {
+        body: {
+          description: params.description,
+          ...(params.name !== undefined ? { name: params.name } : {}),
+        },
       },
-    });
+    );
   }
 
   return client.request<Release>("POST", `/projects/${id}/releases`, {

@@ -2,16 +2,18 @@ import type { LabflowLlm } from "../ai/types.js";
 import { POLICY_DEFAULT } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
-import {
-  listDeployments,
-  listEnvironments,
-} from "../gitlab/deployments.js";
+import { listDeployments, listEnvironments } from "../gitlab/deployments.js";
 
 export async function aiPostDeployIncidentBrief(
   client: GitlabClient,
   llm: LabflowLlm,
   projectId: string | number,
-  options?: { model?: string; maxPromptChars?: number; environment?: string; perPage?: number },
+  options?: {
+    model?: string;
+    maxPromptChars?: number;
+    environment?: string;
+    perPage?: number;
+  },
 ): Promise<string> {
   const deps = await listDeployments(client, projectId, {
     environment: options?.environment,

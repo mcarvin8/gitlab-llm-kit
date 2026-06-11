@@ -80,5 +80,7 @@ export async function listMergeRequestDiscussions(
   }>
 > {
   const id = encodeProjectId(projectId);
-  return client.requestAllPages(`/projects/${id}/merge_requests/${mergeRequestIid}/discussions`);
+  return client.requestAllPages(
+    `/projects/${id}/merge_requests/${mergeRequestIid}/discussions`,
+  );
 }

@@ -29,7 +29,9 @@ describe("GitlabClient", () => {
       token: "t",
       fetchFn: fetchFn as unknown as typeof fetch,
     });
-    await expect(c.request("GET", "/nope")).rejects.toBeInstanceOf(GitlabHttpError);
+    await expect(c.request("GET", "/nope")).rejects.toBeInstanceOf(
+      GitlabHttpError,
+    );
   });
 
   it("requestAllPages stops when page shorter than per_page", async () => {
@@ -86,7 +88,9 @@ describe("GitlabClient", () => {
       fetchFn: fetchFn as unknown as typeof fetch,
     });
     await c.request("GET", "/x");
-    const init = fetchFn.mock.calls[0][1] as { headers: Record<string, string> };
+    const init = fetchFn.mock.calls[0][1] as {
+      headers: Record<string, string>;
+    };
     expect(init.headers.Authorization).toBe("Bearer tok");
   });
 
@@ -114,7 +118,9 @@ describe("GitlabClient", () => {
       token: "t",
       fetchFn: fetchFn as unknown as typeof fetch,
     });
-    await expect(c.request("GET", "/bad")).rejects.toBeInstanceOf(GitlabHttpError);
+    await expect(c.request("GET", "/bad")).rejects.toBeInstanceOf(
+      GitlabHttpError,
+    );
   });
 
   it("normalizes base URL without /api/v4", async () => {
@@ -172,6 +178,8 @@ describe("GitlabClient", () => {
       token: "t",
       fetchFn: fetchFn as unknown as typeof fetch,
     });
-    await expect(c.requestText("GET", "/trace")).rejects.toBeInstanceOf(GitlabHttpError);
+    await expect(c.requestText("GET", "/trace")).rejects.toBeInstanceOf(
+      GitlabHttpError,
+    );
   });
 });

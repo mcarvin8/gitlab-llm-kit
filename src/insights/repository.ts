@@ -1,5 +1,8 @@
 import type { LabflowLlm } from "../ai/types.js";
-import { POLICY_DEFAULT, POLICY_NO_SECRET_EXFILTRATION } from "../ai/policies.js";
+import {
+  POLICY_DEFAULT,
+  POLICY_NO_SECRET_EXFILTRATION,
+} from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import {
@@ -79,7 +82,9 @@ export async function aiCommitCommentsDigest(
 ): Promise<string> {
   const notes = await listCommitComments(client, projectId, sha);
   const formatted = notes
-    .map((n) => `[${n.created_at ?? ""}] ${n.author?.username ?? "?"}: ${n.body}`)
+    .map(
+      (n) => `[${n.created_at ?? ""}] ${n.author?.username ?? "?"}: ${n.body}`,
+    )
     .join("\n\n");
 
   const user = truncateForPrompt(formatted, options?.maxPromptChars ?? 40_000);
@@ -152,7 +157,10 @@ export async function aiCompareRefsNarrative(
   const cmp = await compareRefs(client, projectId, from, to);
   const commits = (cmp.commits ?? []).map(formatCommitLine).join("\n");
   const paths = (cmp.diffs ?? [])
-    .map((d) => `${d.new_path ?? d.old_path ?? "?"} (${d.new_file ? "add" : d.deleted_file ? "del" : "mod"})`)
+    .map(
+      (d) =>
+        `${d.new_path ?? d.old_path ?? "?"} (${d.new_file ? "add" : d.deleted_file ? "del" : "mod"})`,
+    )
     .join("\n");
   const user = truncateForPrompt(
     `Compare ${from}..${to}\n\n## Commits\n${commits}\n\n## Paths\n${paths}`,

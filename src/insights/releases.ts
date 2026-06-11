@@ -2,11 +2,12 @@ import type { LabflowLlm } from "../ai/types.js";
 import { POLICY_DEFAULT } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
+import { compareRefs, listCommits } from "../gitlab/repository.js";
 import {
-  compareRefs,
-  listCommits,
-} from "../gitlab/repository.js";
-import { getReleaseByTag, listReleases, upsertRelease } from "../gitlab/releases.js";
+  getReleaseByTag,
+  listReleases,
+  upsertRelease,
+} from "../gitlab/releases.js";
 import { upsertWikiPage } from "../gitlab/wikiAndSnippets.js";
 
 export type AiDraftReleaseNotesOptions = {
@@ -97,7 +98,10 @@ export async function aiListReleasesOverview(
   const list = await listReleases(client, projectId);
   const brief = list
     .slice(0, 30)
-    .map((r) => `- ${r.tag_name}: ${r.name} (${r.released_at ?? r.created_at ?? ""})`)
+    .map(
+      (r) =>
+        `- ${r.tag_name}: ${r.name} (${r.released_at ?? r.created_at ?? ""})`,
+    )
     .join("\n");
 
   const user = truncateForPrompt(brief, options?.maxPromptChars ?? 40_000);

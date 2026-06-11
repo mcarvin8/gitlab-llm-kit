@@ -1,5 +1,8 @@
 import type { LabflowLlm } from "../ai/types.js";
-import { POLICY_DEFAULT, POLICY_NO_SECRET_EXFILTRATION } from "../ai/policies.js";
+import {
+  POLICY_DEFAULT,
+  POLICY_NO_SECRET_EXFILTRATION,
+} from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import { getProject, getReadmeFile } from "../gitlab/projectMeta.js";
@@ -8,7 +11,12 @@ export async function aiProjectReadmeConsistency(
   client: GitlabClient,
   llm: LabflowLlm,
   projectId: string | number,
-  options?: { model?: string; maxPromptChars?: number; readmePath?: string; ref?: string },
+  options?: {
+    model?: string;
+    maxPromptChars?: number;
+    readmePath?: string;
+    ref?: string;
+  },
 ): Promise<string> {
   const project = await getProject(client, projectId);
   const ref = options?.ref ?? project.default_branch ?? "main";
@@ -24,15 +32,14 @@ export async function aiProjectReadmeConsistency(
     readmeBody = "(README not fetched — check branch/path permissions)";
   }
 
-  const meta =
-    [
-      `Name: ${project.name ?? ""}`,
-      `Path: ${project.path_with_namespace ?? ""}`,
-      `Description: ${project.description ?? ""}`,
-      `Topics: ${(project.topics ?? []).join(", ")}`,
-      `Default branch: ${project.default_branch ?? ""}`,
-      `Web: ${project.web_url ?? ""}`,
-    ].join("\n");
+  const meta = [
+    `Name: ${project.name ?? ""}`,
+    `Path: ${project.path_with_namespace ?? ""}`,
+    `Description: ${project.description ?? ""}`,
+    `Topics: ${(project.topics ?? []).join(", ")}`,
+    `Default branch: ${project.default_branch ?? ""}`,
+    `Web: ${project.web_url ?? ""}`,
+  ].join("\n");
 
   const user = truncateForPrompt(
     `${meta}\n\n## README (${readmePath} @ ${ref})\n${readmeBody}`,
