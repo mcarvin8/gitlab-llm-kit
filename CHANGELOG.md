@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.3.1...v2.4.0) (2026-06-15)
+
+
+### Features
+
+* **ai:** bump @mcarvin/smart-diff from 2.3.1 to 2.3.2 ([#25](https://github.com/mcarvin8/gitlab-llm-kit/issues/25)) ([84ba844](https://github.com/mcarvin8/gitlab-llm-kit/commit/84ba8440eacaa2035cbfd0661bfd7d55b69f3761))
+
+
+### Bug Fixes
+
+* **deps:** remove redundant AI SDK deps provided transitively by smart-diff ([#21](https://github.com/mcarvin8/gitlab-llm-kit/issues/21)) ([3f3e93d](https://github.com/mcarvin8/gitlab-llm-kit/commit/3f3e93d2165f2c30b6b4814b0b3dfaa704c1e21d))
+
 ## [2.3.1](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.3.0...v2.3.1) (2026-06-11)
 
 
