@@ -311,4 +311,4 @@ Breaking changes:
 
 ## License
 
-[MIT](https://github.com/mcarvin8/gitlab-llm-kit/blob/main/LICENSE.md)
+[MIT](LICENSE.md)
