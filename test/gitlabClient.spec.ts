@@ -182,4 +182,69 @@ describe("GitlabClient", () => {
       GitlabHttpError,
     );
   });
+
+  it("uses global fetch when fetchFn is not provided", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => "{}",
+    });
+    vi.stubGlobal("fetch", mockFetch);
+    try {
+      const c = new GitlabClient({ token: "t" });
+      await c.request("GET", "/x");
+      expect(mockFetch).toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("request prepends slash when path lacks leading slash", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => "{}",
+    });
+    const c = new GitlabClient({
+      token: "t",
+      fetchFn: fetchFn as unknown as typeof fetch,
+    });
+    await c.request("GET", "noslash");
+    expect(fetchFn.mock.calls[0][0] as string).toContain("/api/v4/noslash");
+  });
+
+  it("requestText with query, body, and path without leading slash", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => "output",
+    });
+    const c = new GitlabClient({
+      token: "t",
+      fetchFn: fetchFn as unknown as typeof fetch,
+    });
+    const text = await c.requestText("POST", "noslash", {
+      query: { foo: "bar" },
+      body: { key: "val" },
+    });
+    expect(text).toBe("output");
+    const [url, init] = fetchFn.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("noslash");
+    expect(url).toContain("foo=bar");
+    expect(init.body).toBe(JSON.stringify({ key: "val" }));
+  });
+
+  it("requestAllPages uses default per_page of 100 when not specified", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => "[]",
+    });
+    const c = new GitlabClient({
+      token: "t",
+      fetchFn: fetchFn as unknown as typeof fetch,
+    });
+    await c.requestAllPages("/items");
+    expect(fetchFn.mock.calls[0][0] as string).toContain("per_page=100");
+  });
 });

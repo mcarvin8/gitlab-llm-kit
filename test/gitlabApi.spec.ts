@@ -180,6 +180,23 @@ describe("gitlab API wrappers", () => {
     });
   });
 
+  it("listGroupEpics without query defaults to empty object", async () => {
+    const c = mockClient();
+    c.requestAllPages.mockResolvedValue([]);
+    await listGroupEpics(c, "grp");
+    expect(c.requestAllPages).toHaveBeenCalledWith("/groups/grp/epics", {});
+  });
+
+  it("listCommits without query defaults to empty object", async () => {
+    const c = mockClient();
+    c.requestAllPages.mockResolvedValue([]);
+    await listCommits(c, "p");
+    expect(c.requestAllPages).toHaveBeenCalledWith(
+      "/projects/p/repository/commits",
+      {},
+    );
+  });
+
   it("repository", async () => {
     const c = mockClient();
     c.requestAllPages.mockResolvedValue([]);
@@ -342,6 +359,16 @@ describe("gitlab API wrappers", () => {
     expect(c.requestAllPages).toHaveBeenCalledWith(
       "/projects/p/vulnerability_findings",
       { report_type: "sast" },
+    );
+  });
+
+  it("listVulnerabilityFindings without query defaults to empty object", async () => {
+    const c = mockClient();
+    c.requestAllPages.mockResolvedValue([]);
+    await listVulnerabilityFindings(c, "p");
+    expect(c.requestAllPages).toHaveBeenCalledWith(
+      "/projects/p/vulnerability_findings",
+      {},
     );
   });
 
@@ -562,6 +589,16 @@ describe("gitlab API wrappers", () => {
     expect(c.requestAllPages).toHaveBeenCalledWith("/projects/p/environments");
   });
 
+  it("listDeployments without query defaults to empty object", async () => {
+    const c = mockClient();
+    c.requestAllPages.mockResolvedValue([]);
+    await listDeployments(c, "p");
+    expect(c.requestAllPages).toHaveBeenCalledWith(
+      "/projects/p/deployments",
+      {},
+    );
+  });
+
   it("events", async () => {
     const c = mockClient();
     c.requestAllPages.mockResolvedValue([]);
@@ -571,6 +608,16 @@ describe("gitlab API wrappers", () => {
     });
 
     await listGroupEvents(c, "g", {});
+    expect(c.requestAllPages).toHaveBeenCalledWith("/groups/g/events", {});
+  });
+
+  it("listProjectEvents and listGroupEvents without query default to empty object", async () => {
+    const c = mockClient();
+    c.requestAllPages.mockResolvedValue([]);
+    await listProjectEvents(c, "p");
+    expect(c.requestAllPages).toHaveBeenCalledWith("/projects/p/events", {});
+
+    await listGroupEvents(c, "g");
     expect(c.requestAllPages).toHaveBeenCalledWith("/groups/g/events", {});
   });
 
