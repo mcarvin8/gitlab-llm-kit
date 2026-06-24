@@ -1,7 +1,7 @@
 {
   "name": "@mcarvin/gitlab-llm-kit",
   "version": "2.5.0",
-  "description": "TypeScript toolkit for GitLab REST API workflows using any LLM provider supported by the Vercel AI SDK (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, or any OpenAI-compatible gateway).",
+  "description": "TypeScript toolkit for GitLab REST API access and LLM-powered insights (merge requests, issues, pipelines, security, releases, wiki, and more) via the Vercel AI SDK — supports OpenAI, Anthropic, Gemini, Bedrock, Mistral, Groq, xAI, DeepSeek, and any OpenAI-compatible gateway.",
   "author": "Matt Carvin",
   "license": "MIT",
   "main": "dist/index.cjs",
@@ -65,14 +65,17 @@
   },
   "keywords": [
     "gitlab",
+    "gitlab-api",
+    "typescript",
     "ai",
     "ai-sdk",
     "vercel-ai-sdk",
     "llm",
+    "insights",
     "openai",
     "openai-compatible",
     "anthropic",
-    "google",
+    "claude",
     "gemini",
     "bedrock",
     "mistral",
@@ -81,11 +84,12 @@
     "xai",
     "deepseek",
     "merge-requests",
+    "code-review",
+    "pipelines",
+    "ci-cd",
+    "automation",
     "diff",
     "rest-api",
-    "toolkit",
-    "tools",
-    "utils",
-    "git"
+    "toolkit"
   ]
 }
