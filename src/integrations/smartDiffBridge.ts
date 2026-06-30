@@ -1,13 +1,13 @@
 import {
-  generateSummary,
   type CommitInfo,
+  DEFAULT_NOISE_EXCLUDES,
   type DiffShapingOptions,
+  generateSummary,
   type LlmModelProvider,
   type LlmProviderId,
-  truncateUnifiedDiffForLlm,
   resolveLlmMaxDiffChars,
   shapeUnifiedDiff,
-  DEFAULT_NOISE_EXCLUDES,
+  truncateUnifiedDiffForLlm,
 } from "@mcarvin/smart-diff";
 
 import type { GitlabClient } from "../gitlab/client.js";

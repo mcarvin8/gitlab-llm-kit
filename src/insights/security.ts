@@ -1,9 +1,9 @@
-import type { LabflowLlm } from "../ai/types.js";
 import { POLICY_DEFAULT, POLICY_SECURITY_FINDINGS } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
+import type { LabflowLlm } from "../ai/types.js";
+import { listProjectAuditEvents } from "../gitlab/audit.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import { listVulnerabilityFindings } from "../gitlab/security.js";
-import { listProjectAuditEvents } from "../gitlab/audit.js";
 
 export async function aiVulnerabilityFindingsBrief(
   client: GitlabClient,

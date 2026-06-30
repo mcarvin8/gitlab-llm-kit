@@ -1,6 +1,6 @@
 import type { GitlabClient } from "./client.js";
-import { GitlabHttpError } from "./errors.js";
 import { encodeProjectId } from "./encoding.js";
+import { GitlabHttpError } from "./errors.js";
 import type { Snippet, WikiPage } from "./types.js";
 
 export async function listWikiPages(
