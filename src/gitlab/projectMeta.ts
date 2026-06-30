@@ -1,7 +1,7 @@
 import type { GitlabClient } from "./client.js";
 import { encodeProjectId } from "./encoding.js";
-import type { Project } from "./types.js";
 import { getFile } from "./repository.js";
+import type { Project } from "./types.js";
 
 export async function getProject(
   client: GitlabClient,

@@ -1,8 +1,8 @@
-import type { LabflowLlm } from "../ai/types.js";
 import { POLICY_DEFAULT } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
+import type { LabflowLlm } from "../ai/types.js";
 import type { GitlabClient } from "../gitlab/client.js";
-import { searchInProject, type SearchScope } from "../gitlab/search.js";
+import { type SearchScope, searchInProject } from "../gitlab/search.js";
 
 /** Pull search results as raw JSON, then compress into an "everything mentioning X" briefing. */
 export async function aiSearchMentionBundle(

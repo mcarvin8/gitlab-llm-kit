@@ -1,10 +1,9 @@
-import { describe, expect, it, vi, type Mock } from "vitest";
+import { listProjectAuditEvents } from "@src/gitlab/audit.js";
 
 import type { GitlabClient } from "@src/gitlab/client.js";
-import { GitlabHttpError } from "@src/gitlab/errors.js";
-import { listProjectAuditEvents } from "@src/gitlab/audit.js";
 import { listDeployments, listEnvironments } from "@src/gitlab/deployments.js";
 import { getEpic, listEpicIssues, listGroupEpics } from "@src/gitlab/epics.js";
+import { GitlabHttpError } from "@src/gitlab/errors.js";
 import { listGroupEvents, listProjectEvents } from "@src/gitlab/events.js";
 import {
   createIssueNote,
@@ -48,6 +47,7 @@ import {
   updateWikiPage,
   upsertWikiPage,
 } from "@src/gitlab/wikiAndSnippets.js";
+import { describe, expect, it, type Mock, vi } from "vitest";
 
 function mockClient(): GitlabClient & {
   request: Mock;

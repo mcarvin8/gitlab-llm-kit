@@ -1,6 +1,6 @@
-import type { LabflowLlm } from "../ai/types.js";
 import { POLICY_DEFAULT } from "../ai/policies.js";
 import { truncateForPrompt } from "../ai/textLimits.js";
+import type { LabflowLlm } from "../ai/types.js";
 import type { GitlabClient } from "../gitlab/client.js";
 import { listGroupEvents, listProjectEvents } from "../gitlab/events.js";
 

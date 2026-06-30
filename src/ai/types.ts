@@ -1,5 +1,5 @@
-import type { LanguageModel } from "ai";
 import type { LlmProviderId } from "@mcarvin/smart-diff";
+import type { LanguageModel } from "ai";
 
 /**
  * Pluggable LLM caller for GitLab insights. Swap for tests or a gateway;

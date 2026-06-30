@@ -1,5 +1,3 @@
-import { describe, expect, it, vi, type Mock } from "vitest";
-
 import type { GitlabClient } from "@src/gitlab/client.js";
 import {
   getJob,
@@ -8,6 +6,7 @@ import {
   listPipelineJobs,
   listPipelines,
 } from "@src/gitlab/pipelines.js";
+import { describe, expect, it, type Mock, vi } from "vitest";
 
 function mockClient(): GitlabClient & {
   request: Mock;

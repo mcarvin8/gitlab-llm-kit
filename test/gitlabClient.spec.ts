@@ -1,7 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
-
 import { GitlabClient } from "@src/gitlab/client.js";
 import { GitlabHttpError } from "@src/gitlab/errors.js";
+import { describe, expect, it, vi } from "vitest";
 
 describe("GitlabClient", () => {
   it("GET parses JSON", async () => {

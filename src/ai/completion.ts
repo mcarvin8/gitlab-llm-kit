@@ -1,14 +1,13 @@
-import { generateText, type LanguageModel } from "ai";
 import {
-  resolveLanguageModel,
   isLlmProviderConfigured,
   LLM_GATEWAY_REQUIRED_MESSAGE,
   type LlmProviderId,
+  resolveLanguageModel,
 } from "@mcarvin/smart-diff";
-
-import type { LabflowLlm, LabflowLanguageModelProvider } from "./types.js";
+import { generateText, type LanguageModel } from "ai";
 import { POLICY_DEFAULT } from "./policies.js";
 import { truncateForPrompt } from "./textLimits.js";
+import type { LabflowLanguageModelProvider, LabflowLlm } from "./types.js";
 
 export type CreateLabflowLlmOptions = {
   /**
