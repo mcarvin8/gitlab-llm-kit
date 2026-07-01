@@ -1,4 +1,4 @@
-name: Coverage
+name: Test
 on:
   workflow_call:
   push:
@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  coverage:
-    name: Coverage
+  test:
+    name: Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v6
 
       - name: Setup Node
         uses: actions/setup-node@v6
