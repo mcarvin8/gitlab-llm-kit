@@ -30,7 +30,7 @@ So teams on **self-managed GitLab** without Duo can still get MR/issue summaries
 
 ## Requirements
 
-- **Node.js** 20+
+- **Node.js** 22+
 - Network access to **your GitLab** (`https://your.gitlab.example.com/api/v4` or GitLab.com)
 - Network access to **your LLM** (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, or an OpenAI-compatible gateway)
 - A **GitLab token** with scopes appropriate to what you call (e.g. `read_api`, `read_repository` for MR diffs—follow your admin’s least-privilege guidance). **Posting merge request notes** (optional on some helpers) requires a token with the **`api`** scope so GitLab accepts `POST` to the notes API.
