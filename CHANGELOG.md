@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.6.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.5.0...v2.6.0) (2026-07-01)
+
+
+### Features
+
+* **ai:** bump @mcarvin/smart-diff from 3.0.0 to 3.2.0 ([#32](https://github.com/mcarvin8/gitlab-llm-kit/issues/32)) ([9c8aae7](https://github.com/mcarvin8/gitlab-llm-kit/commit/9c8aae743fdd4c2389a870d713e8e9b55d0c3725))
+* **ai:** bump ai from 6.0.195 to 7.0.9 ([#33](https://github.com/mcarvin8/gitlab-llm-kit/issues/33)) ([48905ce](https://github.com/mcarvin8/gitlab-llm-kit/commit/48905cec87ccd03e3a2f11e1a143e38173e3c966))
+
+
+### Bug Fixes
+
+* **engine:** bump min node version to 22 ([#35](https://github.com/mcarvin8/gitlab-llm-kit/issues/35)) ([97e26fd](https://github.com/mcarvin8/gitlab-llm-kit/commit/97e26fdca6f78f840c44687124ed5c5bb49009d1))
+
 ## [2.5.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.4.0...v2.5.0) (2026-06-16)
 
 
