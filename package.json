@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@mcarvin/smart-diff": "3.2.0",
-    "ai": "6.0.195"
+    "ai": "7.0.9"
   },
   "repository": {
     "type": "git",
