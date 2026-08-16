@@ -1,12 +1,12 @@
 /** Minimal GitLab API shapes used by labflow-ai (extend as needed). */
 
-export type GitlabUserRef = {
+type GitlabUserRef = {
   id: number;
   username?: string;
   name?: string;
 };
 
-export type GitlabLabel = {
+type GitlabLabel = {
   id?: number;
   name: string;
   color?: string;
