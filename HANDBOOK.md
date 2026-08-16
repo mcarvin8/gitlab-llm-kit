@@ -797,7 +797,7 @@ const text = await aiProjectReadmeConsistency(client, llm, PROJECT, {
 
 ## Re-exports from `@mcarvin/smart-diff` (local git)
 
-These work **without** GitLab; they use a **local clone** on disk. Configure the same env as `@mcarvin/smart-diff` v2 (`LLM_PROVIDER`, `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY` / …, `LLM_MODEL`, `LLM_BASE_URL`, …).
+These work **without** GitLab; they use a **local clone** on disk. `@mcarvin/smart-diff` v4+ reads the repo directly via the pure-TypeScript [`@scolladon/tsgit`](https://github.com/scolladon/tsgit)—**no git binary required, on any platform**. Configure the same env as `@mcarvin/smart-diff` (`LLM_PROVIDER`, `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY` / …, `LLM_MODEL`, `LLM_BASE_URL`, …).
 
 ### `summarizeGitDiff`
 
@@ -809,9 +809,9 @@ const markdown = await summarizeGitDiff({
   to: "HEAD",
   cwd: "/path/to/repo",
   teamName: "Platform",
-  // smart-diff v2.1+ token-reduction controls (local git path can use all of them):
-  // contextLines: 1,          // `-U1` — 30–60% smaller on modification-heavy diffs
-  // ignoreWhitespace: true,   // `-w` — drops pure-whitespace hunks
+  // token-reduction controls (local git path can use all of them):
+  // contextLines: 1,          // fewer context lines per hunk — 30–60% smaller on modification-heavy diffs
+  // ignoreWhitespace: true,   // drops pure-whitespace hunks
   // stripDiffPreamble: true,  // remove `index`, rename/copy, mode metadata
   // maxHunkLines: 400,        // cap hunk bodies while keeping @@ headers
   // excludeDefaultNoise: true // merge DEFAULT_NOISE_EXCLUDES into excludeFolders
@@ -833,9 +833,10 @@ import {
   getRepoRoot,
 } from "@mcarvin/gitlab-llm-kit";
 
-const git = createGitClient("/path/to/repo");
+const git = await createGitClient("/path/to/repo");
 const root = await getRepoRoot(git);
 const commits = await getCommits(git, "main", "HEAD");
+git.dispose(); // release the tsgit Repository handle when done
 ```
 
 ### Provider resolution helpers
@@ -883,7 +884,6 @@ void DEFAULT_GIT_DIFF_SYSTEM_PROMPT;
 ```ts
 import {
   shapeUnifiedDiff,
-  buildDiffShapingGitArgs,
   DEFAULT_NOISE_EXCLUDES,
   type DiffShapingOptions,
 } from "@mcarvin/gitlab-llm-kit";
@@ -895,10 +895,9 @@ const shaping: DiffShapingOptions = {
 };
 const leanDiff = shapeUnifiedDiff(rawDiff, shaping);
 
-// Build equivalent `git diff` args for shaping options that only git can honor
-// (contextLines → `-U<n>`, ignoreWhitespace → `-w`):
-const gitArgs = buildDiffShapingGitArgs({ contextLines: 1, ignoreWhitespace: true });
-// → ["-U1", "-w"]
+// contextLines and ignoreWhitespace are consumed directly by the diff
+// renderer in the local-clone path (createGitClient / getDiff) — no
+// `git diff` args are built or shelled out.
 
 void DEFAULT_NOISE_EXCLUDES; // lockfiles, node_modules, dist, build, out, coverage, __snapshots__
 ```

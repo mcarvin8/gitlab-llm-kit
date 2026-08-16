@@ -20,8 +20,6 @@ export type {
 } from "@mcarvin/smart-diff";
 /** Re-export smart-diff for local git repos and advanced use. */
 export {
-  buildDiffPathspecs,
-  buildDiffShapingGitArgs,
   createGitClient,
   DEFAULT_GIT_DIFF_SYSTEM_PROMPT,
   DEFAULT_NOISE_EXCLUDES,
