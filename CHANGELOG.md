@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.6.0...v3.0.0) (2026-08-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* minimum Node version raised to 22.22.1 (from >=22), per smart-diff's new requirement. `buildDiffPathspecs` and `buildDiffShapingGitArgs` are no longer re-exported (removed upstream in smart-diff v4) — path filtering and diff shaping are now handled internally by smart-diff without emitting git CLI args.
+
+### Features
+
+* bump @mcarvin/smart-diff to 4.1.1, drop local git binary requirement ([#36](https://github.com/mcarvin8/gitlab-llm-kit/issues/36)) ([b386fe2](https://github.com/mcarvin8/gitlab-llm-kit/commit/b386fe22dd8db4b427a38711d3c6a7ae7ec38a48))
+
 ## [2.6.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.5.0...v2.6.0) (2026-07-01)
 
 
