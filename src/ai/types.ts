@@ -1,11 +1,10 @@
-import type { LlmProviderId } from "@mcarvin/smart-diff";
-import type { LanguageModel } from "ai";
+import type { ChatModel, LlmProviderId } from "@mcarvin/smart-diff";
 
 /**
  * Pluggable LLM caller for GitLab insights. Swap for tests or a gateway;
- * default uses the Vercel AI SDK to reach any supported provider
- * (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek,
- * or any OpenAI-compatible endpoint).
+ * default uses `@mcarvin/smart-diff`'s built-in chat client to reach any
+ * supported provider (OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere,
+ * Groq, xAI, DeepSeek, or any OpenAI-compatible endpoint).
  */
 export type LabflowLlm = (input: {
   system: string;
@@ -14,10 +13,10 @@ export type LabflowLlm = (input: {
 }) => Promise<string>;
 
 /**
- * Factory that returns a Vercel AI SDK `LanguageModel`. Use this to bypass
+ * Factory that returns a smart-diff `ChatModel`. Use this to bypass
  * env-based provider resolution entirely (e.g. in tests or for hand-wired
  * gateways with middlewares/retries).
  */
-export type LabflowLanguageModelProvider = () => Promise<LanguageModel>;
+export type LabflowLanguageModelProvider = () => Promise<ChatModel>;
 
 export type { LlmProviderId };

@@ -1,19 +1,11 @@
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
-const {
-  mockGenerateText,
-  mockResolveLanguageModel,
-  mockIsLlmProviderConfigured,
-} = vi.hoisted(() => ({
-  mockGenerateText: vi.fn(),
-  mockResolveLanguageModel: vi.fn(),
-  mockIsLlmProviderConfigured: vi.fn(),
-}));
-
-vi.mock("ai", () => ({
-  __esModule: true,
-  generateText: mockGenerateText,
-}));
+const { mockResolveLanguageModel, mockIsLlmProviderConfigured } = vi.hoisted(
+  () => ({
+    mockResolveLanguageModel: vi.fn(),
+    mockIsLlmProviderConfigured: vi.fn(),
+  }),
+);
 
 vi.mock("@mcarvin/smart-diff", () => ({
   __esModule: true,
@@ -25,14 +17,14 @@ vi.mock("@mcarvin/smart-diff", () => ({
 
 import { createLabflowLlm } from "@src/ai/completion.js";
 
-const generateText = mockGenerateText as Mock;
+const mockGenerate = vi.fn() as Mock;
 
-const FAKE_MODEL = { __fakeLanguageModel: true } as unknown;
+const FAKE_MODEL = { generate: mockGenerate } as unknown;
 
 describe("createLabflowLlm", () => {
   beforeEach(() => {
-    generateText.mockReset();
-    generateText.mockResolvedValue({ text: "assistant text" });
+    mockGenerate.mockReset();
+    mockGenerate.mockResolvedValue({ text: "assistant text" });
     mockResolveLanguageModel.mockReset();
     mockIsLlmProviderConfigured.mockReset();
     mockIsLlmProviderConfigured.mockReturnValue(true);
@@ -43,9 +35,8 @@ describe("createLabflowLlm", () => {
     const llm = createLabflowLlm({ defaultModel: "custom-model" });
     const out = await llm({ system: "sys", user: "usr" });
     expect(out).toBe("assistant text");
-    expect(generateText).toHaveBeenCalledWith(
+    expect(mockGenerate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: FAKE_MODEL,
         prompt: "usr",
         system: expect.stringContaining("sys"),
       }),
@@ -63,8 +54,8 @@ describe("createLabflowLlm", () => {
     );
   });
 
-  it("throws when Vercel AI SDK returns empty text", async () => {
-    generateText.mockResolvedValueOnce({ text: "" });
+  it("throws when the chat model returns empty text", async () => {
+    mockGenerate.mockResolvedValueOnce({ text: "" });
     const llm = createLabflowLlm();
     await expect(llm({ system: "s", user: "u" })).rejects.toThrow(
       /no text content/,
@@ -91,18 +82,20 @@ describe("createLabflowLlm", () => {
   });
 
   it("uses the supplied languageModelProvider and skips env resolution", async () => {
-    const custom = { __custom: true } as unknown;
+    const customGenerate = vi.fn().mockResolvedValue({ text: "custom text" });
+    const custom = { generate: customGenerate } as unknown;
     const provider = vi.fn().mockResolvedValue(custom);
     mockIsLlmProviderConfigured.mockReturnValue(false);
 
     const llm = createLabflowLlm({ languageModelProvider: provider });
     const out = await llm({ system: "s", user: "u" });
 
-    expect(out).toBe("assistant text");
+    expect(out).toBe("custom text");
     expect(provider).toHaveBeenCalledTimes(1);
     expect(mockResolveLanguageModel).not.toHaveBeenCalled();
-    expect(generateText).toHaveBeenCalledWith(
-      expect.objectContaining({ model: custom }),
+    expect(mockGenerate).not.toHaveBeenCalled();
+    expect(customGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: "u" }),
     );
   });
 

@@ -1,11 +1,16 @@
 /**
- * GitLab REST helpers + LLM insights powered by the Vercel AI SDK.
- * Smart diffing uses `@mcarvin/smart-diff` (any git repo or GitLab-supplied patches),
- * and the LLM layer supports OpenAI, Anthropic, Google, Bedrock, Mistral, Cohere,
- * Groq, xAI, DeepSeek, or any OpenAI-compatible gateway.
+ * GitLab REST helpers + LLM insights powered by `@mcarvin/smart-diff`'s
+ * built-in chat client. Smart diffing uses `@mcarvin/smart-diff` (any git
+ * repo or GitLab-supplied patches), and the LLM layer supports OpenAI,
+ * Anthropic, Google, Bedrock, Mistral, Cohere, Groq, xAI, DeepSeek, or any
+ * OpenAI-compatible gateway.
  */
 
 export type {
+  ChatCallOptions,
+  ChatModel,
+  ChatResult,
+  ChatUsage,
   CommitInfo,
   DiffFileSummary,
   DiffPathFilter,

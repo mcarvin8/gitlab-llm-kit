@@ -1,10 +1,10 @@
 import {
+  type ChatModel,
   isLlmProviderConfigured,
   LLM_GATEWAY_REQUIRED_MESSAGE,
   type LlmProviderId,
   resolveLanguageModel,
 } from "@mcarvin/smart-diff";
-import { generateText, type LanguageModel } from "ai";
 import { POLICY_DEFAULT } from "./policies.js";
 import { truncateForPrompt } from "./textLimits.js";
 import type { LabflowLanguageModelProvider, LabflowLlm } from "./types.js";
@@ -20,16 +20,16 @@ export type CreateLabflowLlmOptions = {
   /** Bound total user prompt size after truncation. */
   maxUserChars?: number;
   /**
-   * Bypass env-based provider resolution entirely — hand-wire a Vercel AI SDK
-   * `LanguageModel` (e.g. to attach middlewares, retries, or a test mock).
+   * Bypass env-based provider resolution entirely — hand-wire a smart-diff
+   * `ChatModel` (e.g. to attach middlewares, retries, or a test mock).
    * When set, `provider` / `defaultModel` are ignored.
    */
   languageModelProvider?: LabflowLanguageModelProvider;
 };
 
 /**
- * Build a {@link LabflowLlm} backed by the Vercel AI SDK. Any provider
- * supported by smart-diff v2 works: `openai`, `openai-compatible`,
+ * Build a {@link LabflowLlm} backed by `@mcarvin/smart-diff`'s chat client.
+ * Any provider supported by smart-diff works: `openai`, `openai-compatible`,
  * `anthropic`, `google`, `bedrock`, `mistral`, `cohere`, `groq`, `xai`,
  * `deepseek`.
  *
@@ -51,7 +51,7 @@ export function createLabflowLlm(
   const envModel = process.env.LLM_MODEL ?? process.env.OPENAI_MODEL;
   const defaultModel = options.defaultModel ?? envModel;
 
-  const resolveModel = async (modelId?: string): Promise<LanguageModel> => {
+  const resolveModel = async (modelId?: string): Promise<ChatModel> => {
     if (options.languageModelProvider) {
       return options.languageModelProvider();
     }
@@ -69,10 +69,11 @@ export function createLabflowLlm(
     const system = [POLICY_DEFAULT, input.system].filter(Boolean).join("\n\n");
     const model = await resolveModel(input.model);
 
-    const { text } = await generateText({
-      model,
+    const { text } = await model.generate({
       system,
       prompt: user,
+      temperature: resolveTemperature(),
+      maxOutputTokens: resolveMaxOutputTokens(),
     });
 
     if (!text) {
@@ -80,4 +81,23 @@ export function createLabflowLlm(
     }
     return text;
   };
+}
+
+/** Same env var and default (0.2) as `@mcarvin/smart-diff`'s internal resolver. */
+function resolveTemperature(): number {
+  const raw = process.env.LLM_TEMPERATURE?.trim();
+  if (raw) {
+    const parsed = Number.parseFloat(raw);
+    if (Number.isFinite(parsed)) {
+      return Math.min(2, Math.max(0, parsed));
+    }
+  }
+  return 0.2;
+}
+
+/** Same env vars and default (4000) as `@mcarvin/smart-diff`'s internal resolver. */
+function resolveMaxOutputTokens(): number {
+  const raw = process.env.LLM_MAX_TOKENS ?? process.env.OPENAI_MAX_TOKENS;
+  const parsed = raw !== undefined ? Number.parseInt(raw, 10) : 4000;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 4000;
 }

@@ -402,11 +402,14 @@ const llm = createLabflowLlm();
 // Pin a provider explicitly — useful when multiple credentials are set:
 // const llm = createLabflowLlm({ provider: "anthropic", defaultModel: "claude-3-5-sonnet-latest" });
 
-// Bring your own LanguageModel (tests, middlewares, custom retries):
-// import { createAnthropic } from "@ai-sdk/anthropic";
+// Bring your own ChatModel (tests, middlewares, custom retries):
 // const llm = createLabflowLlm({
-//   languageModelProvider: async () =>
-//     createAnthropic({ apiKey: process.env.MY_ANTHROPIC_KEY! })("claude-3-5-sonnet-latest"),
+//   languageModelProvider: async () => ({
+//     generate: async ({ system, prompt }) => ({
+//       text: await myCustomChatCall(system, prompt),
+//       usage: {},
+//     }),
+//   }),
 // });
 
 const short = truncateForPrompt(longText, 50_000);
@@ -861,7 +864,7 @@ void defaultModelForProvider("groq");   // "llama-3.1-8b-instant"
 void resolveLlmBaseUrl();               // LLM_BASE_URL / OPENAI_BASE_URL
 void parseLlmDefaultHeadersFromEnv();   // JSON headers from *_DEFAULT_HEADERS
 
-// Hand-wire a Vercel AI SDK LanguageModel:
+// Hand-wire a smart-diff ChatModel:
 const model = await resolveLanguageModel({ provider: "anthropic", model: "claude-3-5-sonnet-latest" });
 ```
 
