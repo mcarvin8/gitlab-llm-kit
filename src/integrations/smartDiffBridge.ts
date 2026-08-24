@@ -43,7 +43,7 @@ export type SummarizeGitLabMergeRequestDiffOptions = {
   /** Override default smart-diff system prompt. */
   systemPrompt?: string;
   /**
-   * Hand-wire a Vercel AI SDK `LanguageModel` factory — bypasses smart-diff's
+   * Hand-wire a smart-diff `ChatModel` factory — bypasses smart-diff's
    * env-based provider resolution (useful in tests or for custom setups).
    */
   llmModelProvider?: LlmModelProvider;
