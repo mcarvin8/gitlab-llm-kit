@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v3.0.0...v4.0.0) (2026-08-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* `LabflowLanguageModelProvider` now returns a smart-diff `ChatModel` instead of an `ai` `LanguageModel`, and `createLabflowLlm` calls `ChatModel.generate()` instead of `ai`'s `generateText()`. Any caller supplying a custom `languageModelProvider` / `llmModelProvider` must return a `ChatModel` (`{ generate(options): Promise<ChatResult> }`).
+
+### Features
+
+* bump @mcarvin/smart-diff to 6.0.0, drop ai dependency ([#39](https://github.com/mcarvin8/gitlab-llm-kit/issues/39)) ([467c1d3](https://github.com/mcarvin8/gitlab-llm-kit/commit/467c1d308dbd902203b82787ddcb40502095474f))
+
 ## [3.0.0](https://github.com/mcarvin8/gitlab-llm-kit/compare/v2.6.0...v3.0.0) (2026-08-16)
 
 

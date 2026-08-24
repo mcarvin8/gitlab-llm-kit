@@ -1,6 +1,6 @@
 {
   "name": "@mcarvin/gitlab-llm-kit",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "TypeScript toolkit for GitLab REST API access and LLM-powered insights (merge requests, issues, pipelines, security, releases, wiki, and more)",
   "author": "Matt Carvin",
   "license": "MIT",
