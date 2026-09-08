@@ -116,4 +116,76 @@ describe("createLabflowLlm", () => {
       }
     }
   });
+
+  it("clamps a valid LLM_TEMPERATURE env value into range", async () => {
+    const prev = process.env.LLM_TEMPERATURE;
+    process.env.LLM_TEMPERATURE = "3.5";
+    try {
+      const llm = createLabflowLlm();
+      await llm({ system: "s", user: "u" });
+      expect(mockGenerate).toHaveBeenCalledWith(
+        expect.objectContaining({ temperature: 2 }),
+      );
+    } finally {
+      if (prev === undefined) {
+        delete process.env.LLM_TEMPERATURE;
+      } else {
+        process.env.LLM_TEMPERATURE = prev;
+      }
+    }
+  });
+
+  it("falls back to 0.2 when LLM_TEMPERATURE is not a finite number", async () => {
+    const prev = process.env.LLM_TEMPERATURE;
+    process.env.LLM_TEMPERATURE = "not-a-number";
+    try {
+      const llm = createLabflowLlm();
+      await llm({ system: "s", user: "u" });
+      expect(mockGenerate).toHaveBeenCalledWith(
+        expect.objectContaining({ temperature: 0.2 }),
+      );
+    } finally {
+      if (prev === undefined) {
+        delete process.env.LLM_TEMPERATURE;
+      } else {
+        process.env.LLM_TEMPERATURE = prev;
+      }
+    }
+  });
+
+  it("uses LLM_MAX_TOKENS from env when set to a valid positive integer", async () => {
+    const prev = process.env.LLM_MAX_TOKENS;
+    process.env.LLM_MAX_TOKENS = "1234";
+    try {
+      const llm = createLabflowLlm();
+      await llm({ system: "s", user: "u" });
+      expect(mockGenerate).toHaveBeenCalledWith(
+        expect.objectContaining({ maxOutputTokens: 1234 }),
+      );
+    } finally {
+      if (prev === undefined) {
+        delete process.env.LLM_MAX_TOKENS;
+      } else {
+        process.env.LLM_MAX_TOKENS = prev;
+      }
+    }
+  });
+
+  it("falls back to 4000 when LLM_MAX_TOKENS is not a positive integer", async () => {
+    const prev = process.env.LLM_MAX_TOKENS;
+    process.env.LLM_MAX_TOKENS = "-5";
+    try {
+      const llm = createLabflowLlm();
+      await llm({ system: "s", user: "u" });
+      expect(mockGenerate).toHaveBeenCalledWith(
+        expect.objectContaining({ maxOutputTokens: 4000 }),
+      );
+    } finally {
+      if (prev === undefined) {
+        delete process.env.LLM_MAX_TOKENS;
+      } else {
+        process.env.LLM_MAX_TOKENS = prev;
+      }
+    }
+  });
 });
