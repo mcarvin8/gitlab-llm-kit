@@ -37,21 +37,21 @@
     ]
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.1",
-    "@commitlint/cli": "20.5.0",
-    "@commitlint/config-conventional": "20.5.0",
-    "@types/node": "25.5.0",
-    "@vitest/coverage-v8": "4.1.5",
+    "@biomejs/biome": "2.5.13",
+    "@commitlint/cli": "21.2.2",
+    "@commitlint/config-conventional": "21.2.2",
+    "@types/node": "26.5.1",
+    "@vitest/coverage-v8": "5.0.0",
     "esbuild": "0.28.2",
     "husky": "9.1.7",
     "knip": "6.32.2",
     "lint-staged": "16.3.3",
     "ls-engines": "0.10.1",
     "typescript": "7.0.2",
-    "vitest": "4.1.5"
+    "vitest": "5.0.0"
   },
   "dependencies": {
-    "@mcarvin/smart-diff": "6.0.0"
+    "@mcarvin/smart-diff": "6.3.0"
   },
   "repository": {
     "type": "git",
