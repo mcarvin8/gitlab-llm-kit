@@ -19,7 +19,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "npx rollup -c",
+    "build": "node scripts/build.mjs && tsc --emitDeclarationOnly --declarationDir dist/typings",
     "start": "node dist/index.cjs",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
@@ -40,15 +40,13 @@
     "@biomejs/biome": "2.5.1",
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-conventional": "20.5.0",
-    "@rollup/plugin-terser": "1.0.0",
-    "@rollup/plugin-typescript": "12.1.4",
     "@types/node": "25.5.0",
     "@vitest/coverage-v8": "4.1.5",
+    "esbuild": "0.28.2",
     "husky": "9.1.7",
     "knip": "6.32.2",
     "lint-staged": "16.3.3",
     "ls-engines": "0.10.1",
-    "rollup": "4.59.0",
     "typescript": "5.9.3",
     "vitest": "4.1.5"
   },
@@ -89,5 +87,8 @@
     "diff",
     "rest-api",
     "toolkit"
-  ]
+  ],
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
 }
